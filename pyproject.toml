@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "flascars"
+version = "0.1.0"
+description = ""
+authors = ["Guilherme Silva Souza <gss214@hotmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+Flask = "^2.0.3"
+numpy = "^1.22.3"
+matplot = "^0.1.9"
+matplotlib = "^3.5.1"
+networkx = "^2.7.1"
+pyvis = "^0.1.9"
+seaborn = "^0.11.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
