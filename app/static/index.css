@@ -1,0 +1,26 @@
+html *
+{
+   font-family: 'Roboto' !important;
+}
+.graph-container{
+   min-height: 70vh;
+   display: flex;
+   justify-content: center;
+}
+.graph{
+   min-height: 100%;
+   background-color: gray;
+   border-radius: 4px;
+   width: 70vw;
+}
+.footer{
+   display: flex;
+   justify-content: space-between;
+   border-top: solid;
+   border-width: 1px;
+   border-color: #B9B9B9;
+   font-size: 12px;
+}
+.footer > p{
+   color: #B9B9B9;
+}
