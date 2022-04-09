@@ -2,7 +2,7 @@ import networkx as nx
 from pyvis import network as net
 import time
 from queue import PriorityQueue
-from typing import Union
+from typing import Union, Tuple
 
 class Graph:
     def __init__(self, fd):
@@ -12,6 +12,9 @@ class Graph:
         
         self.graph = nx.DiGraph()
         self.edges = {}
+        self.lastNodeId = 0
+        self.clients = {}
+        self.cars = {}
 
         # Pula o cabeçalho do arquivo de entrada
         fd.readline()
@@ -45,6 +48,10 @@ class Graph:
             if len(values) != 9 :
                 raise ValueError("Misformatted graph file")
             
+            # Mantem registro do maior id de nó
+            if self.lastNodeId < int(node_orig_id): self.lastNodeId = int(node_orig_id)
+            if self.lastNodeId < int(node_dest_id): self.lastNodeId = int(node_dest_id)
+
             # Adiciona nos ao grafo. A multiplicacao por 50 é para melhorar a visualização
             self.graph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50)
             self.graph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50)
@@ -61,6 +68,60 @@ class Graph:
             self.edges[edge_id] = (node_orig_id, node_dest_id)
             #str(int(distance)/int(speed))
             self.graph.add_edge(node_orig_id, node_dest_id, distance=distance, speed=speed, time=wheight_time, title=edge_title, id=edge_id)
+
+    def genNewId(self):
+        self.lastNodeId += 1
+        return self.lastNodeId
+
+    def addCar(self, position : Tuple[float, float], edge_id : str) -> str:
+        """
+        Input: position - tuple of x and y coordinates, id of which edge the car is currently on
+        Output: Created car ID
+        Behavior: Creates new car as an unconnected node in the graph
+        """
+        carId = str(self.genNewId())
+        car_title = "Car<br>"
+        car_title += f"ID = {carId}<br>"
+        car_title += f"Position = {position}"
+
+        self.cars[carId] = (position, edge_id)
+        self.graph.add_node(
+            carId,
+            x = position[0]*50,
+            y = position[1]*50,
+            edge = edge_id,
+            shape = "square",
+            title = car_title,
+            color = "orange"
+        )
+        return carId
+
+    def addClient(self, position : Tuple[float, float], destination : Tuple[float, float]) -> str:
+        """
+        Input: position and destination - tuples of x and y coordinates
+        Output: Created client's ID
+        Behavior: Creates new client as an unconnected node in the graph
+        """
+        clientId = str(self.genNewId())
+        edge_title = "Client<br>"
+        edge_title += f"ID = {clientId}<br>"
+        edge_title += f"Origem = {position}<br>"
+        edge_title += f"Destino = {destination}"
+
+        self.clients[clientId] = (position, destination)
+        self.graph.add_node(
+            clientId,
+            x = position[0]*50,
+            y = position[1]*50,
+            orig = position,
+            dest = destination,
+            shape = "diamond",
+            title = edge_title,
+            color = "#F1919B"
+        )
+        return clientId
+
+    # def addCar(position):
 
     def getSpeed(self, edge_id : str) -> Union[float, None]:
         """
@@ -136,9 +197,6 @@ class Graph:
             self.updateTitle(edge_id)
             return True
 
-    # def addClient():
-    # def addCar(position):
-
     def showGraph(self):
         graph_plot = net.Network(height='100%', width='100%',notebook=False, directed=True)
         graph_plot.from_nx(self.graph)
@@ -170,15 +228,3 @@ class Graph:
         
         if destiny is None: return distances
         return distances[destiny]
-
-fid  = open("input.txt", "r")
-g = Graph(fid)
-# print(g.edges)
-# print(g.graph.edges)
-# g.changeSpeed("7", 12345)
-# g.updateTitle("1")
-# print(g.changeSpeed("5", 1))
-print(g.getDistance("1"))
-print(g.getSpeed("1"))
-print(g.getTime("1"))
-# g.showGraph()
