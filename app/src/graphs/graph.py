@@ -2,6 +2,7 @@ import networkx as nx
 from pyvis import network as net
 import time
 from queue import PriorityQueue
+from typing import Union
 
 class Graph:
     def __init__(self, fd):
@@ -60,6 +61,48 @@ class Graph:
             self.edges[edge_id] = (node_orig_id, node_dest_id)
             #str(int(distance)/int(speed))
             self.graph.add_edge(node_orig_id, node_dest_id, distance=distance, speed=speed, time=wheight_time, title=edge_title, id=edge_id)
+
+    def getSpeed(self, edge_id : str) -> Union[float, None]:
+        """
+        Input: edge's id
+        Output: edge's speed
+        Behavior: get edge's current speed. Returns None if edge doesn't exists
+        """
+        try:
+            orig, dest = self.edges[edge_id]
+            speed = self.graph.edges[orig, dest]["speed"]
+        except KeyError:
+            return None
+        else:
+            return speed
+
+    def getDistance(self, edge_id : str) -> Union[float, None]:
+        """
+        Input: edge's id
+        Output: edge's distance
+        Behavior: get edge's current distance. Returns None if edge doesn't exists
+        """
+        try:
+            orig, dest = self.edges[edge_id]
+            distance = self.graph.edges[orig, dest]["distance"]
+        except KeyError:
+            return None
+        else:
+            return distance
+            
+    def getTime(self, edge_id : str) -> Union[float, None]:
+        """
+        Input: edge's id
+        Output: edge's time
+        Behavior: get edge's current time. Returns None if edge doesn't exists
+        """
+        try:
+            orig, dest = self.edges[edge_id]
+            time = self.graph.edges[orig, dest]["time"]
+        except KeyError:
+            return None
+        else:
+            return time
 
     def updateTitle(self, edge_id : str) -> None:
         """
@@ -134,5 +177,8 @@ g = Graph(fid)
 # print(g.graph.edges)
 # g.changeSpeed("7", 12345)
 # g.updateTitle("1")
-print(g.changeSpeed("5", 1))
-g.showGraph()
+# print(g.changeSpeed("5", 1))
+print(g.getDistance("1"))
+print(g.getSpeed("1"))
+print(g.getTime("1"))
+# g.showGraph()
