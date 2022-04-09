@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+{% block content %}
+<body>
+    <div class="header">
+
+        <nav class="navbar navbar-dark bg-dark navbar-expand-lg text-white px-4">
+            <a class="navbar-brand" href="#">Flascars</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-placement="right" title="Tooltip na direita" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+          
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul class="navbar-nav mr-auto">
+
+                    <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#clientModal" data-placement="right" title="Tooltip na direita">
+                        <i class="fas fa-user"></i>
+                    </button>
+                    
+                    <div class="modal fade" id="clientModal" tabindex="-1" role="dialog" aria-labelledby="clientModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="clientModalLabel" style="color: black">Adicionar Cliente</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body pb-1">
+                                    <form>
+                                        <p style="color: black">Adicione um cliente manualmente</p>
+                                        <div class="mb-3">
+                                          <label for="Localization" class="form-label">Localização</label>
+                                          <div class="row">
+                                            <div class="col">
+                                              <input class="form-control" placeholder="Localização x" aria-label="Localização x" type="number">
+                                            </div>
+                                            <div class="col">
+                                              <input class="form-control" placeholder="Localização y" aria-label="Localização y" type="number">
+                                            </div>
+                                          </div>
+                                          
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="Destination" class="form-label">Destino</label>
+                                            <div class="row">
+                                                <div class="col">
+                                                <input type="text" class="form-control" placeholder="Destino x" aria-label="Destino x">
+                                                </div>
+                                                <div class="col">
+                                                    <input type="text" class="form-control" placeholder="Destino y" aria-label="Destino y">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                    </form>
+                                    <div class="mt-5">
+                                        <label for="formFileMultiple" class="form-label" style="color: black">Ou faça um upload de uma lista de clientes !</label>
+                                        <input class="form-control" type="file" id="formFileMultiple" multiple>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="btnSaveClientModal">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">Adicionar Cliente</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </li>
+                <li class="nav-item">
+                    <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#carModal"><i class="fas fa-car"></i></button>
+
+                    <div class="modal fade" id="carModal" tabindex="-1" role="dialog" aria-labelledby="carModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="carModalLabel" style="color: black">Adicionar Carro</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                ...
+                                </div>
+                                <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                                <button type="button" class="btn btn-primary">Adicionar Carro</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </li>
+                <li class="nav-item">
+                    <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#velocityModal"><i class="fas fa-tachometer-alt"></i></button>
+
+                    <div class="modal fade" id="velocityModal" tabindex="-1" role="dialog" aria-labelledby="velocityModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="velocityModalLabel" style="color: black">Alterar velocidade da via</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                ...
+                                </div>
+                                <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                                <button type="button" class="btn btn-primary">Alterar velcidade da via</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>     
+                </li>
+            </div>
+    
+          
+          </nav>
+    </div>
+    
+    <div class="graph-container mt-5">
+        <div class="graph"></div> 
+    </div>
+    
+    <p>client-info-container</p>
+    <div class="client-info-container">
+                
+    </div>
+
+    <div class="card mb-3" style="max-width: 540px;">
+        <div class="row g-0">
+          <div class="col-md-4">
+            <img src="..." class="img-fluid rounded-start" alt="...">
+          </div>
+          <div class="col-md-8">
+            <div class="card-body">
+              <h5 class="card-title">Card title</h5>
+              <p class="card-text">Informações.</p>
+              <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <div class="footer">
+        <p class="mt-2 mr-3 mb-1">UNB - 04/2022</p>
+        <p class="mt-2 ml-3 mb-1">Site desenvolvido para a disciplina de PAA</p>
+    </div>
+</body>
+</html>
+{% endblock %}

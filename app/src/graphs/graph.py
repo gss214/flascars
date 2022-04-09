@@ -55,6 +55,7 @@ class Graph:
         graph_plot = net.Network(height='100%', width='100%',notebook=False, directed=True)
         graph_plot.from_nx(self.graph)
         graph_plot.toggle_physics(False)
+
         # graph_plot.toggle_drag_nodes(False)
         graph_plot.show('graph.html')
 
@@ -219,10 +220,6 @@ class Graph:
         
         # A = k melhores caminhos
         return A            
-
-
-
-                    
 
 fid  = open("input3.txt", "r")
 g = Graph(fid)
