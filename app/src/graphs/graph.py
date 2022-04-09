@@ -35,10 +35,10 @@ class Graph:
                 raise ValueError("Misformatted graph file")
             
             # Adiciona nos ao grafo. A multiplicacao por 50 é para melhorar a visualização
-            self.graph.add_node(values[1], x = int(values[2])*50, y = int(values[3])*50)
-            self.graph.add_node(values[4], x = int(values[5])*50, y = int(values[6])*50)
+            self.graph.add_node(values[1], x = float(values[2])*50, y = float(values[3])*50)
+            self.graph.add_node(values[4], x = float(values[5])*50, y = float(values[6])*50)
             
-            wheight_time = (int(values[7])/int(values[8]))*3600
+            wheight_time = (float(values[7])/float(values[8]))*3600
 
             # Formata tempo em formato hh:mm
             time_string = time.strftime('%H:%M', time.gmtime(wheight_time))
@@ -57,11 +57,51 @@ class Graph:
         # graph_plot.toggle_drag_nodes(False)
         graph_plot.show('graph.html')
 
+    """
+        Entrada:
+            self: próprio grafo
+            origin: origem da busca, é um inteiro como string. Ex: '2', '3'
+            destiny: destino da busca, segue o mesmo padrão de origin
+
+        Saída:
+            Tupla: (caminho, distancia)
+                caminho: menor caminho encontrado entre a origem e destino
+                distancia: a distância deste menor caminho encontrado
+    """
+    def getShortestPath(self, origin, destiny):
+        distance, prev = self.dijkstra(origin, destiny)
+        path = []
+
+        if distance < float('inf'):
+            path.insert(0, destiny)
+            current = prev[destiny]
+            
+            while current != origin:
+                path.insert(0, current)
+                current = prev[current]
+            
+            path.insert(0, current)
+        
+        return path, distance
+
+    """
+        Entrada:
+            self: próprio grafo
+            origin: origem da busca, é um inteiro como string. Ex: '2', '3'
+            destiny: destino da busca, segue o mesmo padrão de origin
+
+        Saída:
+            Tupla: (distancia, anteriores)
+                distancia: a distância deste menor caminho encontrado
+                anteriores: dicionário em que os valores são associados às chaves que eles desembocam
+                    Ex: '2': '1' significa que o vértice 2 é acessível através do vértice 1 (1 -> 2)
+    """
     def dijkstra(self, origin, destiny = None):
         visited = {}
         distances = {}
         pq = PriorityQueue()
-      
+        prev = {}
+
         for node in self.graph.nodes:
             visited[node] = False
             distances[node] = float('inf')
@@ -78,10 +118,16 @@ class Graph:
                     if distances[current] + cost <= distances[neighbor]:
                         distances[neighbor] = distances[current] + cost
                         pq.put((distances[neighbor], neighbor))
+                        
+                        prev[neighbor] = current
         
         if destiny is None: return distances
-        return distances[destiny]
+        return distances[destiny], prev  
 
-fid  = open("input2.txt", "r")
+fid  = open("input.txt", "r")
 g = Graph(fid)
-print(g.dijkstra("2")) 
+g.graph.edges['2', '3']['distance'] = float('inf')
+print(g.graph.edges['2', '3']['distance'])
+#print(g.dijkstra('1', '4'))
+print(g.getShortestPath('1', '4'))
+g.showGraph()
