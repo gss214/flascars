@@ -10,7 +10,8 @@ class Graph:
             raise ValueError("File descriptor is none")
         
         self.graph = nx.DiGraph()
-        
+        self.edges = {}
+
         # Pula o cabeçalho do arquivo de entrada
         fd.readline()
 
@@ -18,6 +19,15 @@ class Graph:
         for line in fd:
             # Separa os valores de input em um lista
             values = line.strip().split()
+            edge_id         = values[0]         # str
+            node_orig_id    = values[1]         # str
+            node_orig_x     = float(values[2])
+            node_orig_y     = float(values[3])
+            node_dest_id    = values[4]         # str
+            node_dest_x     = float(values[5])
+            node_dest_y     = float(values[6])
+            distance        = float(values[7])
+            speed           = float(values[8])
             '''
                 values[0] = Aresta_n
                 values[1] = v_origem
@@ -35,20 +45,56 @@ class Graph:
                 raise ValueError("Misformatted graph file")
             
             # Adiciona nos ao grafo. A multiplicacao por 50 é para melhorar a visualização
-            self.graph.add_node(values[1], x = int(values[2])*50, y = int(values[3])*50)
-            self.graph.add_node(values[4], x = int(values[5])*50, y = int(values[6])*50)
+            self.graph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50)
+            self.graph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50)
             
-            wheight_time = (int(values[7])/int(values[8]))*3600
+            wheight_time = (int(distance)/int(speed))*3600
 
             # Formata tempo em formato hh:mm
             time_string = time.strftime('%H:%M', time.gmtime(wheight_time))
-            edge_title = f"ID = {values[0]}<br>"
-            edge_title += f"Speed = {values[8]}km/h<br>"
-            edge_title += f"Distance = {values[7]}km<br>"
+            edge_title = f"ID = {edge_id}<br>"
+            edge_title += f"Speed = {speed}km/h<br>"
+            edge_title += f"Distance = {distance}km<br>"
             edge_title += f"Time = {time_string}"
-            
-            #str(int(values[7])/int(values[8]))
-            self.graph.add_edge(values[1], values[4], distance=values[7], speed=values[8], time=wheight_time, title=edge_title)
+
+            self.edges[edge_id] = (node_orig_id, node_dest_id)
+            #str(int(distance)/int(speed))
+            self.graph.add_edge(node_orig_id, node_dest_id, distance=distance, speed=speed, time=wheight_time, title=edge_title, id=edge_id)
+
+    def updateTitle(self, edge_id : str) -> None:
+        """
+        Input: edge's id
+        Behavior: updates egde's title based on it's current attributes
+        """
+        orig, dest = self.edges[edge_id]
+        edge_dict = self.graph.edges[orig, dest]
+        wheight_time = edge_dict['time']
+        new_title = f"ID = {edge_dict['id']}<br>"
+        new_title += f"Speed = {edge_dict['speed']}km/h<br>"
+        new_title += f"Distance = {edge_dict['distance']}km<br>"
+        new_title += f"Time = {time.strftime('%H:%M', time.gmtime(wheight_time))}"
+        self.graph.edges[orig, dest]["title"] = new_title
+
+    def changeSpeed(self, edge_id : str, speed : float) -> bool:
+        """
+        Input: edge id, new speed
+        Output: True if sucessful. False if edge is not found.
+        Behavior: changes speed of specified edge
+        """
+        try:
+            orig, dest = self.edges[edge_id]
+            distance = self.graph.edges[orig, dest]["distance"]
+            wheight_time = (int(distance)/int(speed))*3600
+            self.graph.edges[orig, dest]["speed"] = speed
+            self.graph.edges[orig, dest]["time"] = wheight_time
+        except KeyError:
+            return False
+        else:
+            self.updateTitle(edge_id)
+            return True
+
+    # def addClient():
+    # def addCar(position):
 
     def showGraph(self):
         graph_plot = net.Network(height='100%', width='100%',notebook=False, directed=True)
@@ -82,6 +128,11 @@ class Graph:
         if destiny is None: return distances
         return distances[destiny]
 
-fid  = open("input2.txt", "r")
+fid  = open("input.txt", "r")
 g = Graph(fid)
+# print(g.edges)
+# print(g.graph.edges)
+# g.changeSpeed("7", 12345)
+# g.updateTitle("1")
+print(g.changeSpeed("5", 1))
 g.showGraph()
