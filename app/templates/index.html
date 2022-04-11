@@ -174,16 +174,20 @@
   <div class="client-info-container mb-5">
     <div class="client-info p-4">
       <div class="dropdown" style="align-self: flex-start">
-        <form >
-            <select id="id" class="form-control form-control-lg primary round-btn" name="street-id-velocity">
-                {% for id in clients %}
-                <option value={{loop.index}}>{{loop.index}}</option>
+        <form action="/" method="POST" name="id">
+            <select id="client-id" onclick="send()" class="form-control form-control-lg primary round-btn" name="id">
+                {% for client in clients %}
+                    {%if loop.index == id_cliente %}
+                        <option selected="selected" value={{loop.index}} >{{loop.index}}</option>
+                    {% else %}
+                        <option value={{loop.index}} >{{loop.index}}</option>
+                    {% endif %}
                 {% endfor %}
             </select>
         </form>
       </div>
       <div class="cliente-choices">
-        {% for data in clients[0] %}
+        {% for data in clients[id_cliente-1] %}
         <div class="my-2" style="display: flex; flex-direction: collum; justify-content: center;">
           <div class="line p-3 info-btn" style="border-radius: 5px; border: 1px solid #BEBEBE; align-items: center;">
             <button type="button" class="btn btn-secondary mr-2" style="border-radius: 50px">{{loop.index}}</button>
@@ -235,7 +239,13 @@
   </div>
 </body>
 <script>
-    let id = document.getElementById('id')
+    var click = false
+    function send(){   
+        if(click){
+            document.forms["id"].submit(id)
+        }
+        click = true
+    }
 </script>
 </html>
 {% endblock %}

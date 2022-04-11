@@ -3,6 +3,7 @@ from flask import request, render_template, flash, redirect, session
 
 @app.route("/", methods=['GET', 'POST'])
 def hello_world():
+    value = 1
     streets = [1, 2, 4]
     # [Tempo da viagem, Distância]
     clients = [ [[45.5, 59.3],  [71.5, 89.8],   [122.7, 124.6], [171.5, 189],   [222.7, 224.6]],
@@ -11,17 +12,20 @@ def hello_world():
     if request.method == 'GET':
         print('get')
     else:
+        print(request.form)
         if "client-form-submit" in request.form:
             data = from_form_to_client(request)
             print(data)
         elif "car-form-submit" in request.form:
             data = from_form_to_car(request)
             print(data)
+        elif "id" in request.form:
+            value = int(request.form.get('id'))
         else:
             data = from_form_to_velocity(request)
             print(data)
     
-    return render_template('index.html', streets=streets, clients=clients)
+    return render_template('index.html', streets=streets, clients=clients, id_cliente=value)
 
 
 def from_form_to_client(request):
