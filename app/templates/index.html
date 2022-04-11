@@ -1,211 +1,241 @@
 {% extends 'base.html' %}
 {% block content %}
+
 <body>
-    <div class="header">
+  <div class="header">
 
-        <nav class="navbar navbar-dark bg-dark navbar-expand-lg text-white px-4">
-            <a class="navbar-brand" href="#"><img class="mr-2" src="{{ url_for('static', filename='car.png') }}" style="max-width: 1.8vw;"><span>Flascars</span></a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-placement="right" title="Tooltip na direita" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-              <span class="navbar-toggler-icon"></span>
-            </button>
-          
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-              <ul class="navbar-nav mr-auto">
+    <nav class="navbar navbar-dark bg-dark navbar-expand-lg text-white px-4">
+      <a class="navbar-brand" href="#"><img class="mr-2" src="{{ url_for('static', filename='car.png') }}"
+          style="max-width: 1.8vw;"><span>Flascars</span></a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-placement="right"
+        title="Tooltip na direita" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+        aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-                    <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#clientModal" data-placement="right" title="Tooltip na direita">
-                        <i class="fas fa-user"></i>
-                    </button>
-                    
-                    <div class="modal fade" id="clientModal" tabindex="-1" role="dialog" aria-labelledby="clientModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="clientModalLabel" style="color: black">Adicionar Cliente</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body pb-1">
-                                    <form action="/" method="POST">
-                                        <p style="color: black">Adicione um cliente manualmente</p>
-                                        <div class="mb-3">
-                                          <label for="Localization" class="form-label">Localização</label>
-                                          <div class="row">
-                                            <div class="col">
-                                              <input class="form-control" name="input-loc-x" placeholder="Localização x" aria-label="Localização x" type="number" step="0.01">
-                                            </div>
-                                            <div class="col">
-                                              <input class="form-control" name="input-loc-y" placeholder="Localização y" aria-label="Localização y" type="number" step="0.01">
-                                            </div>
-                                          </div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label for="Destination" class="form-label">Destino</label>
-                                            <div class="row">
-                                                <div class="col">
-                                                <input type="text" class="form-control" name="input-dest-x" placeholder="Destino x" aria-label="Destino x" type="number" step="0.01">
-                                                </div>
-                                                <div class="col">
-                                                    <input type="text" class="form-control" name="input-dest-y" placeholder="Destino y" aria-label="Destino y" type="number" step="0.01">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="mt-5">
-                                            <label for="formFileMultiple" class="form-label" style="color: black">Ou faça um upload de uma lista de clientes !</label>
-                                            <input class="form-control" type="file" id="formFileMultiple" name="client-file" multiple>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-dismiss="modal" id="btnSaveClientModal">Cancelar</button>
-                                            <button type="submit" id="client-form-submit" name="client-form-submit" value="client-form-submit" class="btn btn-primary">Adicionar Cliente</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                </li>
-                <li class="nav-item">
-                    <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#carModal"><i class="fas fa-car"></i></button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
 
-                    <div class="modal fade" id="carModal" tabindex="-1" role="dialog" aria-labelledby="carModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="carModalLabel" style="color: black">Adicionar Carro</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <form action="/" method="POST">
-                                        <input type="text" class="form-control" name="id_street" placeholder="ID da Rua" aria-label="street_id">
-                                        <div class="mt-5">
-                                            <label for="formFileMultiple" class="form-label" style="color: black">Ou faça um upload de uma lista de carros !</label>
-                                            <input class="form-control" type="file" name="car-file" multiple>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                                        <button type="submit" id="car-form-submit" name="car-form-submit" class="btn btn-primary">Adicionar Carro</button>
-                                    </div>
-                                    </form>
-                            </div>
-                        </div>
-                    </div>
+          <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#clientModal"
+            data-placement="right" title="Tooltip na direita">
+            <i class="fas fa-user"></i>
+          </button>
 
-                </li>
-                <li class="nav-item">
-                    <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#velocityModal"><i class="fas fa-tachometer-alt"></i></button>
-
-                    <div class="modal fade" id="velocityModal" tabindex="-1" role="dialog" aria-labelledby="velocityModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="velocityModalLabel" style="color: black">Alterar velocidade da via</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <form action="/" method="POST">
-                                        <select class="form-control form-control-lg" name="street-id-velocity">
-                                            {% for st in streets %}
-                                               <option value={{st}}>Rua {{st}}</option>
-                                            {% endfor %}
-                                        </select>
-                                        <p></p>
-                                        <input name="velocity" class="form-control" placeholder="Insira a nova velcidade da rua" aria-label="velocity_entry" type="number" step="0.01">
-                                        <div class="mt-5">
-                                            <label for="formFileMultiple" class="form-label" style="color: black">Ou faça um upload de um arquivo !</label>
-                                            <input class="form-control" type="file" id="formFileMultiple" multiple>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                                            <button type="submit" id="velocity-form-submit" name="velocity-form-submit" class="btn btn-primary">Alterar velcidade da via</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>     
-                </li>
-            </div>
-    
-          
-          </nav>
-    </div>
-    <div class="banner">
-    </div>
-
-    <div class="graph-container mt-5">
-        <div class="graph">
-            <iframe src="{{ url_for('static', filename='graph.html') }}" style="width: 100%; height: 100%; border-radius: 10px 10px 0 0; border: 1px;" title="graph"></iframe>
-        </div> 
-    </div>
-    
-    <div class="client-info-container mb-5">
-        <div class="client-info p-4">
-            <div class="dropdown" style="align-self: flex-start">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <div class="modal fade" id="clientModal" tabindex="-1" role="dialog" aria-labelledby="clientModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="clientModalLabel" style="color: black">Adicionar Cliente</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
-                </button>
-                <select class="dropdown-menu" name="cliente">
-                    {% for client in clients %}
-                        <option value={{client}}>{{client}}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="cliente-choices">
-                {% for data in clients[0] %}
-                <div class="my-2" style="display: flex; flex-direction: collum; justify-content: center;">
-                    <div class="line p-3 info-btn" style="border-radius: 5px; border: 1px solid #BEBEBE; align-items: center;">
-                        <button type="button" class="btn btn-secondary mr-2" style="border-radius: 50px">ID</button>
-                        <div class="info-label ml-2 px-3">
-                            <p class="mr-5 ml- mb-0">Tempo estimado do rota: {{data[0]}} minutos</p> <p class="mb-0 mr-4">Distância total da rota: {{data[1]}} metros</p>
+                  </button>
+                </div>
+                <div class="modal-body pb-1">
+                  <form action="/" method="POST">
+                    <p style="color: black">Adicione um cliente manualmente</p>
+                    <div class="mb-3">
+                      <label for="Localization" class="form-label">Localização</label>
+                      <div class="row">
+                        <div class="col">
+                          <input class="form-control" name="input-loc-x" placeholder="Localização x"
+                            aria-label="Localização x" type="number" step="0.01">
                         </div>
+                        <div class="col">
+                          <input class="form-control" name="input-loc-y" placeholder="Localização y"
+                            aria-label="Localização y" type="number" step="0.01">
+                        </div>
+                      </div>
                     </div>
+                    <div class="mb-3">
+                      <label for="Destination" class="form-label">Destino</label>
+                      <div class="row">
+                        <div class="col">
+                          <input type="text" class="form-control" name="input-dest-x" placeholder="Destino x"
+                            aria-label="Destino x" type="number" step="0.01">
+                        </div>
+                        <div class="col">
+                          <input type="text" class="form-control" name="input-dest-y" placeholder="Destino y"
+                            aria-label="Destino y" type="number" step="0.01">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                        id="btnSaveClientModal">Cancelar</button>
+                      <button type="submit" id="client-form-submit" name="client-form-submit" value="client-form-submit"
+                        class="btn btn-primary">Adicionar Cliente</button>
+                    </div>
+                  </form>
+                  <form action="/upload_client" method="post" enctype=multipart/form-data>
+                    <div class="mt-5">
+                      <label for="formFileMultiple" class="form-label" style="color: black">Ou faça um upload de uma
+                        lista de clientes !</label>
+                      <input class="form-control" type="file" id="formFileMultiple" name="file-client">
+                    </div>
+                    <input type = "submit"/>
+                  </form>
                 </div>
-                {% endfor %}
+              </div>
+            </div>
+          </div>
 
-            </div>
-            
-        </div> 
-    </div>
+          </li>
+          <li class="nav-item">
+            <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#carModal"><i
+                class="fas fa-car"></i></button>
 
-    <div class="container-fluid">
-        <div class="row g-0">
-            <div class="col-3">
-                <div class="card-body">
-                    <h5 class="card-title">Taxa de carros por cliente</h5>
-                    <p class="card-text" id="rate_car_client"></p>
+            <div class="modal fade" id="carModal" tabindex="-1" role="dialog" aria-labelledby="carModalLabel"
+              aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="carModalLabel" style="color: black">Adicionar Carro</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <form action="/" method="POST">
+                      <input type="text" class="form-control" name="id_street" placeholder="ID da Rua"
+                        aria-label="street_id">
+                      <div class="mt-5">
+                        <label for="formFileMultiple" class="form-label" style="color: black">Ou faça um upload de uma
+                          lista de carros !</label>
+                        <input class="form-control" type="file" name="car-file" multiple>
+                      </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" id="car-form-submit" name="car-form-submit" class="btn btn-primary">Adicionar
+                      Carro</button>
+                  </div>
+                  </form>
                 </div>
+              </div>
             </div>
-            <div class="col-3">
-                <div class="card-body">
-                    <h5 class="card-title">Tempo médio de espera dos clientes</h5>
-                    <p class="card-text" id="average_wait"></p>
+
+          </li>
+          <li class="nav-item">
+            <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#velocityModal"><i
+                class="fas fa-tachometer-alt"></i></button>
+
+            <div class="modal fade" id="velocityModal" tabindex="-1" role="dialog" aria-labelledby="velocityModalLabel"
+              aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="velocityModalLabel" style="color: black">Alterar velocidade da via</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <form action="/" method="POST">
+                      <select class="form-control form-control-lg" name="street-id-velocity">
+                        {% for st in streets %}
+                        <option value={{st}}>Rua {{st}}</option>
+                        {% endfor %}
+                      </select>
+                      <p></p>
+                      <input name="velocity" class="form-control" placeholder="Insira a nova velcidade da rua"
+                        aria-label="velocity_entry" type="number" step="0.01">
+                      <div class="mt-5">
+                        <label for="formFileMultiple" class="form-label" style="color: black">Ou faça um upload de um
+                          arquivo !</label>
+                        <input class="form-control" type="file" id="formFileMultiple" multiple>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" id="velocity-form-submit" name="velocity-form-submit"
+                          class="btn btn-primary">Alterar velcidade da via</button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
+              </div>
             </div>
-            <div class="col-3">
-                <div class="card-body">
-                    <h5 class="card-title">Tempo médio de viagem</h5>
-                    <p class="card-text" id="average_time"></p>
-                </div>
-            </div>
-            <div class="col-3">
-                <div class="card-body">
-                    <h5 class="card-title">Distância média percorrida</h5>
-                    <p class="card-text" id="average_distance"></p>
-                </div>
-            </div>
-        </div>
+          </li>
       </div>
 
-    <div class="footer px-3">
-        <p class="mt-2 mr-3 mb-1">UNB - 04/2022</p>
-        <p class="mt-2 ml-3 mb-1">Site desenvolvido para a disciplina de PAA</p>
+
+    </nav>
+  </div>
+  <div class="banner">
+  </div>
+
+  <div class="graph-container mt-5">
+    <div class="graph">
+      <iframe src="{{ url_for('static', filename='graph.html') }}"
+        style="width: 100%; height: 100%; border-radius: 10px 10px 0 0; border: 1px;" title="graph"></iframe>
     </div>
+  </div>
+
+  <div class="client-info-container mb-5">
+    <div class="client-info p-4">
+      <div class="dropdown" style="align-self: flex-start">
+        <form >
+            <select id="id" class="form-control form-control-lg primary round-btn" name="street-id-velocity">
+                {% for id in clients %}
+                <option value={{loop.index}}>{{loop.index}}</option>
+                {% endfor %}
+            </select>
+        </form>
+      </div>
+      <div class="cliente-choices">
+        {% for data in clients[0] %}
+        <div class="my-2" style="display: flex; flex-direction: collum; justify-content: center;">
+          <div class="line p-3 info-btn" style="border-radius: 5px; border: 1px solid #BEBEBE; align-items: center;">
+            <button type="button" class="btn btn-secondary mr-2" style="border-radius: 50px">{{loop.index}}</button>
+            <div class="info-label ml-2 px-3">
+              <p class="mr-5 ml- mb-0">Tempo estimado do rota: {{data[0]}} minutos</p>
+              <p class="mb-0 mr-4">Distância total da rota: {{data[1]}} metros</p>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+
+      </div>
+
+    </div>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row g-0">
+      <div class="col-3">
+        <div class="card-body">
+          <h5 class="card-title">Taxa de carros por cliente</h5>
+          <p class="card-text" id="rate_car_client"></p>
+        </div>
+      </div>
+      <div class="col-3">
+        <div class="card-body">
+          <h5 class="card-title">Tempo médio de espera dos clientes</h5>
+          <p class="card-text" id="average_wait"></p>
+        </div>
+      </div>
+      <div class="col-3">
+        <div class="card-body">
+          <h5 class="card-title">Tempo médio de viagem</h5>
+          <p class="card-text" id="average_time"></p>
+        </div>
+      </div>
+      <div class="col-3">
+        <div class="card-body">
+          <h5 class="card-title">Distância média percorrida</h5>
+          <p class="card-text" id="average_distance"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer px-3">
+    <p class="mt-2 mr-3 mb-1">UNB - 04/2022</p>
+    <p class="mt-2 ml-3 mb-1">Site desenvolvido para a disciplina de PAA</p>
+  </div>
 </body>
+<script>
+    let id = document.getElementById('id')
+</script>
 </html>
 {% endblock %}

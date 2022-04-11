@@ -1,6 +1,5 @@
 from app import app
-from flask import request, render_template
-
+from flask import request, render_template, flash, redirect, session
 
 @app.route("/", methods=['GET', 'POST'])
 def hello_world():
@@ -28,6 +27,8 @@ def hello_world():
 def from_form_to_client(request):
     if request.form.get('client-file'):
         client_file = request.form.get('client-file')
+        file = request.files['file']
+        print(type(file))
         return client_file
     else:
         loc_x = float(request.form.get("input-loc-x"))
@@ -54,3 +55,31 @@ def from_form_to_velocity(request):
         street = request.form.get('street-id-velocity')
         velocity = float(request.form.get("velocity"))
         return [street, velocity]
+
+
+@app.route("/upload_client", methods=['GET', 'POST'])
+def upload_client_list():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file-client' not in request.files:
+            flash('No file part')
+            return redirect('/')
+        file = request.files['file-client']
+        print(file)
+    return redirect('/')
+
+@app.route('/route_name')
+def method_name():
+    pass
+#
+# leitura
+# def upload_to_client(request)
+#   if request.file
+# f = open('', 'r')
+# return [id_client, loc_x, loc_y, dest_x, dest_y]
+
+# def upload_to_car(request)
+#   if request.file
+# f = open('', 'r')
+# return [id_car, loc_x, loc_y, dest_x, dest_y]
+

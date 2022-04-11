@@ -45,8 +45,12 @@ html *
    width: 80%;
 }
 .round-btn{
+   background-color: #97C2FC !important;
    font-size: 1.5rem !important;
    border-radius: 50px !important;
+   border: solid !important;
+   border-width: 1px !important;
+   border-color: white !important;
 }
 .line{
    display: flex;
@@ -68,4 +72,8 @@ html *
    overflow: hidden;
    background-image: url('banner.jpg');
    background-position:center;
+}
+.info-btn{
+   width: 40vw;
+   max-width: 40vw;
 }
