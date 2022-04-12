@@ -7,6 +7,16 @@ from typing import Union, Tuple
 
 class Graph:
     def __init__(self, fd):
+        """_summary_
+
+        Args:
+            fd (file_descriptor): descritor do arquivo que servirá para a montagem do grafo
+
+        Raises:
+            ValueError: "File descriptor is none"
+            ValueError: "Misformatted graph file"
+        """
+
         # Verifica a validade do descritor do arquivo
         if fd is None:
             raise ValueError("File descriptor is none")
@@ -220,20 +230,22 @@ class Graph:
             self.updateTitle(edge_id)
             return True
 
-    def showGraph(self):
+    def showGraph(self, reverse = False):
+        """Mostra o grafo
+        Args:
+            reverse (bool, optional): True se o objetivo é mostrar o grafo reverso. Padrão é Falso.
+        """
+        graph = self.graph
+
+        if reverse:
+            graph = self.Rgraph
+
         graph_plot = net.Network(height='100%', width='100%',notebook=False, directed=True)
-        graph_plot.from_nx(self.graph)
+        graph_plot.from_nx(graph)
         graph_plot.toggle_physics(False)
 
         graph_plot.toggle_drag_nodes(False)
         graph_plot.show('graph.html')
-
-        # graph_plot = net.Network(height='100%', width='100%',notebook=False, directed=True)
-        # graph_plot.from_nx(self.Rgraph)
-        # graph_plot.toggle_physics(False)
-
-        # graph_plot.toggle_drag_nodes(False)
-        # graph_plot.show('graph2.html')
 
     def getShortestPath(self, origin, destination):
         """
