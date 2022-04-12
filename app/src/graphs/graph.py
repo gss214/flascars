@@ -90,19 +90,26 @@ class Graph:
         self.lastNodeId += 1
         return self.lastNodeId
 
-    def __car_to_node(self, car_id : str):
+    def car_to_node(self, car_id : str) -> Tuple[str, float, float]:
         """ Aproxima um carro a um vértice e calcula a distância entre a posição original do carro e o vértice para o qual ele foi aproximado.
 
         Args:
             car_id (str): id do carro que será aproximado
 
         Returns:
-            (str, float, float): tripla cuja primeira posição corresponde ao id do nó para o qual o carro foi aproximado, a segunda é a distância entre este nó e a posição original do carro e a terceira o tempo gasto para percorrer esta distância até o nó.
+            (str, float, float): tripla cuja primeira posição corresponde ao id do nó para o qual o carro foi aproximado, a segunda é a distância (em kilometros) entre este nó e a posição original do carro e a terceira o tempo gasto para percorrer esta distância até o nó.
         """
-        node_id = ''
-        dist_offset = 0.0
-        time_offset = 0.0
-        return node_id, dist_offset, time_offset
+        carObj = self.cars[car_id]
+        # car_edge eh a aresta em que o carro esta
+        car_edge = self.edges[carObj["edge_id"]]
+        nodeObj1 = self.graph.nodes[car_edge[0]]["orig"]
+        nodeObj2 = self.graph.nodes[car_edge[1]]["orig"]
+        distance_node = self.__distance(nodeObj2, carObj["position"])
+        distance_total = self.__distance(nodeObj2, nodeObj1)
+
+        relative = (distance_node/distance_total)
+
+        return (car_edge[1], self.graph.edges[car_edge[0], car_edge[1]]["distance"] * relative, self.graph.edges[car_edge[0], car_edge[1]]["time"] * relative)
 
     def addCar(self, position : Tuple[float, float], edge_id : str) -> str:
         """
@@ -115,10 +122,11 @@ class Graph:
         car_title += f"ID = {carId}<br>"
         car_title += f"Position = {position}"
 
-        aprrox_node, dist_offset, time_offset = self.__car_to_node()
+        # aprrox_node, dist_offset, time_offset = self.__car_to_node()
 
         #self.cars[carId] = (position, edge_id, aprrox_node, dist_offset, time_offset)
-        self.cars[carId] = {'position': position , 'edge_id': edge_id , 'aprrox_node': aprrox_node , 'dist_offset': dist_offset , 'time_offset': time_offset}
+        # self.cars[carId] = {'position': position , 'edge_id': edge_id , 'aprrox_node': aprrox_node , 'dist_offset': dist_offset , 'time_offset': time_offset}
+        self.cars[carId] = {'position': position , 'edge_id': edge_id}
 
         self.graph.add_node(
             carId,
@@ -599,8 +607,11 @@ class Graph:
 if __name__ == "__main__":
     fd = open("input3.txt", "r")
     g = Graph(fd)
-    clientId = g.addClient((7, 10), (7, 7))
-    res = g.road_approx(clientId)
-    g.drawClientOnRoad(res["clientPosition"])
+    # clientId = g.addClient((7, 10), (7, 7))
+    # res = g.road_approx(clientId)
+    # g.drawClientOnRoad(res["clientPosition"])
     # print(res)
+    carId = g.addCar([1.5, 1.5], "1")
+    # g.calc_offset(carId)
+    print(g.car_to_node(carId))
     g.showGraph()
