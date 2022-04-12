@@ -334,7 +334,7 @@ class Graph:
                     if len(current_path) > j and path_root == current_path[:j+1]:
                         
                         # backup do peso da aresta
-                        weight = g.graph.edges[current_path[j], current_path[j+1]]['time']
+                        weight = self.graph.edges[current_path[j], current_path[j+1]]['time']
                         
                         # caso o peso seja infinito apenas pulamos a iteração
                         if weight == float('inf'):
@@ -342,7 +342,7 @@ class Graph:
                         
                         # muda temporariamente o peso (tempo de travessia) da aresta para infinito
                         removed_edges.append((current_path[j], current_path[j+1], weight))
-                        g.graph.edges[current_path[j], current_path[j+1]]['time'] = float('inf')
+                        self.graph.edges[current_path[j], current_path[j+1]]['time'] = float('inf')
 
                 # obtém um novo caminho e vetor de distâncias, dessa vez indo do nó de refinamento até o destino 
                 # (Busca alternativas desse nó de refinamento até o destino)
@@ -363,7 +363,7 @@ class Graph:
 
                 # volta os pesos para as arestas 
                 for edge in removed_edges:
-                    g.graph.edges[edge[0], edge[1]]['time'] = edge[2]
+                    self.graph.edges[edge[0], edge[1]]['time'] = edge[2]
             
             # Se a lista com os candidatos a menores caminhos possuir elementos
             if len(B):
