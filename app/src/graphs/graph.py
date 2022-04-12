@@ -3,7 +3,7 @@ import networkx as nx
 from pyvis import network as net
 import time
 from queue import PriorityQueue
-from typing import Union, Tuple
+from typing import Union, Tuple, Dict
 import numpy as np
 import math
 
@@ -86,11 +86,11 @@ class Graph:
             self.graph.add_edge(node_orig_id, node_dest_id, distance=distance, speed=speed, time=wheight_time, title=edge_title, id=edge_id)
             self.Rgraph.add_edge(node_dest_id, node_orig_id, distance=distance, speed=speed, time=wheight_time, title=edge_title, id=edge_id)
 
-    def genNewId(self):
+    def __genNewId(self):
         self.lastNodeId += 1
         return self.lastNodeId
 
-    def car_to_node(self, car_id : str):
+    def __car_to_node(self, car_id : str):
         """ Aproxima um carro a um vértice e calcula a distância entre a posição original do carro e o vértice para o qual ele foi aproximado.
 
         Args:
@@ -110,12 +110,12 @@ class Graph:
         Output: Created car ID
         Behavior: Creates new car as an unconnected node in the graph
         """
-        carId = str(self.genNewId())
+        carId = str(self.__genNewId())
         car_title = "Car<br>"
         car_title += f"ID = {carId}<br>"
         car_title += f"Position = {position}"
 
-        aprrox_node, dist_offset, time_offset = self.car_to_node()
+        aprrox_node, dist_offset, time_offset = self.__car_to_node()
 
         #self.cars[carId] = (position, edge_id, aprrox_node, dist_offset, time_offset)
         self.cars[carId] = {'position': position , 'edge_id': edge_id , 'aprrox_node': aprrox_node , 'dist_offset': dist_offset , 'time_offset': time_offset}
@@ -137,7 +137,7 @@ class Graph:
         Output: Created client's ID
         Behavior: Creates new client as an unconnected node in the graph
         """
-        clientId = str(self.genNewId())
+        clientId = str(self.__genNewId())
         edge_title = "Client<br>"
         edge_title += f"ID = {clientId}<br>"
         edge_title += f"Origem = {position}<br>"
@@ -162,7 +162,7 @@ class Graph:
         Output: Created client's ID
         Behavior: Creates new client as an unconnected node in the graph
         """
-        starId = str(self.genNewId())
+        starId = str(self.__genNewId())
         print(starId)
         self.graph.add_node(
             starId,
@@ -189,7 +189,7 @@ class Graph:
         else:
             return speed
 
-    def getDistance(self, edge_id : str) -> Union[float, None]:
+    def get__Distance(self, edge_id : str) -> Union[float, None]:
         """
         Input: edge's id
         Output: edge's distance
@@ -217,7 +217,7 @@ class Graph:
         else:
             return time
 
-    def updateTitle(self, edge_id : str) -> None:
+    def __updateTitle(self, edge_id : str) -> None:
         """
         Input: edge's id
         Behavior: updates egde's title based on it's current attributes
@@ -246,7 +246,7 @@ class Graph:
         except KeyError:
             return False
         else:
-            self.updateTitle(edge_id)
+            self.__updateTitle(edge_id)
             return True
 
     def showGraph(self, reverse = False):
@@ -273,7 +273,7 @@ class Graph:
         # graph_plot.toggle_drag_nodes(False)
         # graph_plot.show('graph2.html')
 
-    def calc_line_equation(self, node1 : Tuple[float, float], node2 : Tuple[float, float]) -> Tuple[float, float, float] :
+    def __calc_line_equation(self, node1 : Tuple[float, float], node2 : Tuple[float, float]) -> Tuple[float, float, float] :
         """ calculates line coefficients given two points coordinates
 
         Args:
@@ -289,7 +289,7 @@ class Graph:
         c = a*node1[0] + b*node1[1]
         return a, b, c
 
-    def orthogonal(self, node : Tuple[float, float], m: float) -> Tuple[float, float, float]:
+    def __orthogonal(self, node : Tuple[float, float], m: float) -> Tuple[float, float, float]:
         """ calculates orthogonal from a given point coordinates x and y
 
         Args:
@@ -304,7 +304,7 @@ class Graph:
         c = node[1] - (m*node[0])
         return a, b, c
 
-    def distance(self, node1: Tuple[float, float], node2: Tuple[float, float]) -> float:
+    def __distance(self, node1: Tuple[float, float], node2: Tuple[float, float]) -> float:
         """ calculates distance between two points coordinates
 
         Args:
@@ -317,7 +317,7 @@ class Graph:
 
         return math.sqrt(((node2[0] - node1[0]) ** 2) + ((node2[1] - node1[1]) ** 2))
 
-    def intersection_point(self, node1 : Tuple[float, float], node2 : Tuple[float, float], node_to_edge : Tuple[float, float]) -> Tuple[float, float]:
+    def __intersection_point(self, node1 : Tuple[float, float], node2 : Tuple[float, float], node_to_edge : Tuple[float, float]) -> Tuple[float, float]:
         """ find intersection point between a pair of nodes and a given node 
 
         Args:
@@ -329,23 +329,23 @@ class Graph:
             Tuple[float, float]: intersection point coordinates
         """
 
-        normal_eq = self.calc_line_equation(node1, node2)
+        normal_eq = self.__calc_line_equation(node1, node2)
         if normal_eq[0] == 0:
             return node_to_edge[0], normal_eq[2]/normal_eq[1]
-        orthogonal_eq = self.orthogonal(node_to_edge, normal_eq[1]/normal_eq[0])
+        orthogonal_eq = self.__orthogonal(node_to_edge, normal_eq[1]/normal_eq[0])
         det = (normal_eq[0] * orthogonal_eq[1]) - (orthogonal_eq[0] * normal_eq[1])
         x = ((orthogonal_eq[1] * normal_eq[2]) - (normal_eq[1] * orthogonal_eq[2]))/det
         y = ((normal_eq[0] * orthogonal_eq[2]) - (orthogonal_eq[0] * normal_eq[2]))/det
         return x, y
 
-    def road_approx(self, node_id: str) -> dict[Tuple[float, float], str]:
+    def road_approx(self, node_id: str) -> Dict[Tuple[float, float], str]:
         """ finds nearest edge (or node) of a unconnected node
 
         Args:
             node_id (str): unconnected node
 
         Returns:
-            dict[Tuple[float, float], str]: x, y coordinates of approximated point, edge id
+            Dict[Tuple[float, float], str]: x, y coordinates of approximated point, edge id
         """
 
         x, y = self.graph.nodes[node_id]["orig"]
@@ -355,26 +355,24 @@ class Graph:
             node1 = self.graph.nodes[node1_id]["orig"]
             node2 = self.graph.nodes[node2_id]["orig"]
             
-            intersection = self.intersection_point(node1, node2, (x, y))
-            dist_node_1 = self.distance(intersection, node1)
-            dist_node_2 = self.distance(intersection, node2)
+            intersection = self.__intersection_point(node1, node2, (x, y))
+            dist_node_1 = self.__distance(intersection, node1)
+            dist_node_2 = self.__distance(intersection, node2)
 
             loopDistance = None
 
-            if not math.isclose(dist_node_1 + dist_node_2, self.distance(node1, node2)):
+            if not math.isclose(dist_node_1 + dist_node_2, self.__distance(node1, node2)):
                 if dist_node_1 < dist_node_2:
-                    loopDistance = (self.distance((x, y), node1), node1, edge)
+                    loopDistance = (self.__distance((x, y), node1), node1, edge)
                 else:
-                    loopDistance = (self.distance((x, y), node2), node2, edge)
+                    loopDistance = (self.__distance((x, y), node2), node2, edge)
 
             else:
-                loopDistance = (self.distance((x, y), intersection), intersection, edge)
+                loopDistance = (self.__distance((x, y), intersection), intersection, edge)
 
             if loopDistance[0] < chosen_one[0]: chosen_one = loopDistance
 
         return {"clientPosition": chosen_one[1], "edge": chosen_one[2]}
-
-        
 
     def getShortestPath(self, origin, destination):
         """
@@ -602,8 +600,7 @@ if __name__ == "__main__":
     fd = open("input3.txt", "r")
     g = Graph(fd)
     clientId = g.addClient((7, 10), (7, 7))
-    coco = g.client_suffer(clientId)
-    g.drawClientOnRoad(coco["clientPosition"])
-    print(coco)
+    res = g.road_approx(clientId)
+    g.drawClientOnRoad(res["clientPosition"])
+    # print(res)
     g.showGraph()
-    
