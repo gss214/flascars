@@ -9,6 +9,16 @@ import math
 
 class Graph:
     def __init__(self, fd):
+        """_summary_
+
+        Args:
+            fd (file_descriptor): descritor do arquivo que servirá para a montagem do grafo
+
+        Raises:
+            ValueError: "File descriptor is none"
+            ValueError: "Misformatted graph file"
+        """
+
         # Verifica a validade do descritor do arquivo
         if fd is None:
             raise ValueError("File descriptor is none")
@@ -80,6 +90,20 @@ class Graph:
         self.lastNodeId += 1
         return self.lastNodeId
 
+    def car_to_node(self, car_id : str):
+        """ Aproxima um carro a um vértice e calcula a distância entre a posição original do carro e o vértice para o qual ele foi aproximado.
+
+        Args:
+            car_id (str): id do carro que será aproximado
+
+        Returns:
+            (str, float, float): tripla cuja primeira posição corresponde ao id do nó para o qual o carro foi aproximado, a segunda é a distância entre este nó e a posição original do carro e a terceira o tempo gasto para percorrer esta distância até o nó.
+        """
+        node_id = ''
+        dist_offset = 0.0
+        time_offset = 0.0
+        return node_id, dist_offset, time_offset
+
     def addCar(self, position : Tuple[float, float], edge_id : str) -> str:
         """
         Input: position - tuple of x and y coordinates, id of which edge the car is currently on
@@ -91,7 +115,11 @@ class Graph:
         car_title += f"ID = {carId}<br>"
         car_title += f"Position = {position}"
 
-        self.cars[carId] = (position, edge_id)
+        aprrox_node, dist_offset, time_offset = self.car_to_node()
+
+        #self.cars[carId] = (position, edge_id, aprrox_node, dist_offset, time_offset)
+        self.cars[carId] = {'position': position , 'edge_id': edge_id , 'aprrox_node': aprrox_node , 'dist_offset': dist_offset , 'time_offset': time_offset}
+
         self.graph.add_node(
             carId,
             x = position[0]*50,
@@ -221,9 +249,18 @@ class Graph:
             self.updateTitle(edge_id)
             return True
 
-    def showGraph(self):
+    def showGraph(self, reverse = False):
+        """Mostra o grafo
+        Args:
+            reverse (bool, optional): True se o objetivo é mostrar o grafo reverso. Padrão é Falso.
+        """
+        graph = self.graph
+
+        if reverse:
+            graph = self.Rgraph
+
         graph_plot = net.Network(height='100%', width='100%',notebook=False, directed=True)
-        graph_plot.from_nx(self.graph)
+        graph_plot.from_nx(graph)
         graph_plot.toggle_physics(False)
 
         graph_plot.toggle_drag_nodes(False)
@@ -366,47 +403,73 @@ class Graph:
         
         return path, distance
 
-    def dijkstra(self, origin, destination = None):
+    def dijkstra(self, origin : str, destination : str = None, reverse = False):
         """
             Entrada:
-                self: próprio grafo
-                origin: origem da busca, é um inteiro como string. Ex: '2', '3'
-                destination: destino da busca, segue o mesmo padrão de origin
+                self (graph): próprio grafo
+                origin (string): origem da busca, é um inteiro como string. Ex: '2', '3'
+                destination (string): destino da busca, segue o mesmo padrão de origin
+                reverse (Bool): True se a busca deve ser feita no grafo reverso
 
             Saída:
+                Se reverse == True
+                    (commute_time, distances): tempo até a cada vértice, distância a cada vértice
+                
+                Se reverse == False e destination == None
+                    (commute_time): tempo até cada vértice
+
+                Do contário:
                 Tupla: (distancia, anteriores)
                     distancia: a distância deste menor caminho encontrado
                     anteriores: dicionário em que os valores são associados às chaves que eles desembocam
                         Ex: '2': '1' significa que o vértice 2 é acessível através do vértice 1 (1 -> 2)
         """
+
+        if reverse:
+            graph = self.Rgraph
+        else:
+            graph = self.graph
+
         visited = {}
-        distances = {}
+        commute_time = {}
         pq = PriorityQueue()
         prev = {}
 
-        for node in self.graph.nodes:
+        # REVER
+        distance = {}
+
+
+        for node in graph.nodes:
             visited[node] = False
-            distances[node] = float('inf')
+            commute_time[node] = float('inf')
+            distance[node] = float('inf')
 
-        distances[origin] = 0
+        commute_time[origin] = 0
 
-        pq.put((distances[origin], origin))
+        # REVER
+        distance[origin] = 0
+
+        pq.put((commute_time[origin], origin))
         while not pq.empty():
             _, current = pq.get()
             if not visited[current]:
                 visited[current] = True
-                for neighbor in list(self.graph.neighbors(current)):
-                    cost = self.graph.edges[current, neighbor]["time"]
-                    if distances[current] + cost <= distances[neighbor]:
-                        distances[neighbor] = distances[current] + cost
-                        pq.put((distances[neighbor], neighbor))
+                for neighbor in list(graph.neighbors(current)):
+                    cost = graph.edges[current, neighbor]["time"]
+                    if commute_time[current] + cost <= commute_time[neighbor]:
+                        commute_time[neighbor] = commute_time[current] + cost
+                        pq.put((commute_time[neighbor], neighbor))
                         
+                        # REVER
+                        distance[neighbor] = distance[current] + graph.edges[current, neighbor]['distance']
+
                         prev[neighbor] = current
         
-        if destination is None: return distances
-        return distances, prev  
+        if reverse: return commute_time, distance
+        if destination is None: return commute_time
+        return commute_time, prev  
 
-    def yenkShortestPaths(self, origin, destination, k=5):
+    def yenkShortestPaths(self, origin : str, destination : str, k=5):
         """
             Entrada:
                 self: próprio grafo
@@ -499,7 +562,41 @@ class Graph:
                 break
         
         # A = k melhores caminhos
-        return A            
+        return A    
+
+    def car_routes(self, client : str, time_offset : float, dist_offset : float):
+        """Determina a distância de um cliente para todos os carros livres
+
+        Args:
+            self (graph): o próprio grafo
+            client (string): origem da busca, é um inteiro como string. Ex: '2', '3' e representa o vértice para o qual o cliente foi aproximado.
+            
+            time_offset: tempo gasto do ponto na aresta para o qual o cliente foi aproximado até o vértice que será levado em conta no cálculo.
+
+            dist_offset (float): distância do ponto na aresta para o qual o cliente foi aproximado até o vértice que será levado em conta na busca pelo menor caminho.
+
+        Return:
+            ({string: float}, {string: float}): tupla de dicionários:
+                adjusted_distance: distância do carro até o cliente
+                adjusted_times: tempo de viagem do carro até o cliente
+        """
+        # obtém a distância de um vértice a todos os outros no 
+        #distances = self.dijkstra(client, reverse=True)
+        distances, times = self.dijkstra(client, reverse=True)
+        
+        adjusted_distances = {}
+        adjusted_times = {}
+
+        # itera por todos os carros
+        for key in self.cars:
+            # soma a distância do vértice para o qual o carro foi aproximado com o offset de ajuste do carro e do cliente
+            adjusted_distances[key] = distances[self.cars[key]['approx_node']] + self.cars[key]['dist_offset'] + dist_offset
+            
+            # soma o tempo até o vértice para o qual o carro foi aproximado com o offset de ajuste
+            adjusted_times[key] = times[self.cars[key]['approx_node']] + self.cars[key]['time_offset'] + time_offset
+
+        return adjusted_distances, adjusted_times
+
 
 if __name__ == "__main__":
     fd = open("input3.txt", "r")
@@ -509,3 +606,4 @@ if __name__ == "__main__":
     g.drawClientOnRoad(coco["clientPosition"])
     print(coco)
     g.showGraph()
+    
