@@ -4,6 +4,7 @@ from pyvis import network as net
 import time
 from queue import PriorityQueue
 from typing import Union, Tuple
+import numpy as np
 
 class Graph:
     def __init__(self, fd):
@@ -55,10 +56,10 @@ class Graph:
             if self.lastNodeId < int(node_dest_id): self.lastNodeId = int(node_dest_id)
 
             # Adiciona nos ao grafo. A multiplicacao por 50 é para melhorar a visualização
-            self.graph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50)
-            self.graph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50)
-            self.Rgraph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50)
-            self.Rgraph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50)
+            self.graph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50, orig = (node_orig_x, node_orig_y))
+            self.graph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50, orig = (node_dest_x, node_dest_y))
+            self.Rgraph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50, orig = (node_orig_x, node_orig_y))
+            self.Rgraph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50, orig = (node_dest_x, node_dest_y))
             
             wheight_time = (int(distance)/int(speed))*3600
 
@@ -125,6 +126,23 @@ class Graph:
             color = "#F1919B"
         )
         return clientId
+
+    def addPontoDeEmbarque(self, position : Tuple[float, float]) -> str:
+        """
+        Input: position and destination - tuples of x and y coordinates
+        Output: Created client's ID
+        Behavior: Creates new client as an unconnected node in the graph
+        """
+        starId = str(self.genNewId())
+        print(starId)
+        self.graph.add_node(
+            starId,
+            x = position[0]*50,
+            y = position[1]*50,
+            orig = position,
+            shape = "star",
+            color = "yellow"
+        )
 
     # def addCar(position):
 
@@ -216,6 +234,39 @@ class Graph:
 
         # graph_plot.toggle_drag_nodes(False)
         # graph_plot.show('graph2.html')
+
+    def calc_line_equation(self, node1, node2):
+        a = node2[1] - node1[1]
+        b = node1[0] - node2[0]
+        c = a*node1[0] + b*node1[1]
+        return a, b, c
+
+    def ortogonal(self, client, m):
+        a = -m
+        b = 1
+        c = client[1] - (m*client[0])
+        return a, b, c
+
+    def intersection_point(self, node1, node2, client):
+        normal_eq = self.calc_line_equation(node1, node2)
+        if normal_eq[0] == 0:
+            return client[0], normal_eq[2]/normal_eq[1]
+        ortogonal_eq = self.ortogonal(client, normal_eq[1]/normal_eq[0])
+        det = (normal_eq[0] * ortogonal_eq[1]) - (ortogonal_eq[0] * normal_eq[1])
+        x = ((ortogonal_eq[1] * normal_eq[2]) - (normal_eq[1] * ortogonal_eq[2]))/det
+        y = ((normal_eq[0] * ortogonal_eq[2]) - (ortogonal_eq[0] * normal_eq[2]))/det
+        return x, y
+
+    def client_suffer(self, client_id):
+        x, y = self.graph.nodes[client_id]["orig"]
+        edgess = dict(self.graph.edges).copy()
+        for edge in edgess:
+            node1, node2 = edge
+            node1 = self.graph.nodes[node1]["orig"]
+            node2 = self.graph.nodes[node2]["orig"]
+            print(node1, node2, (x, y))
+            self.addPontoDeEmbarque(self.intersection_point(node1, node2, (x, y)))
+            
 
     def getShortestPath(self, origin, destination):
         """
@@ -378,3 +429,10 @@ class Graph:
         
         # A = k melhores caminhos
         return A            
+
+if __name__ == "__main__":
+    fd = open("Input.txt", "r")
+    g = Graph(fd)
+    clientId = g.addClient((1, 0), (7, 7))
+    g.client_suffer(clientId)
+    g.showGraph()
