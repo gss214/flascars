@@ -5,6 +5,7 @@ import time
 from queue import PriorityQueue
 from typing import Union, Tuple
 import numpy as np
+import math
 
 class Graph:
     def __init__(self, fd):
@@ -247,6 +248,9 @@ class Graph:
         c = client[1] - (m*client[0])
         return a, b, c
 
+    def distance(self, node1, node2):
+        return math.sqrt(((node2[0] - node1[0]) ** 2) + ((node2[1] - node1[1]) ** 2))
+
     def intersection_point(self, node1, node2, client):
         normal_eq = self.calc_line_equation(node1, node2)
         if normal_eq[0] == 0:
@@ -259,14 +263,32 @@ class Graph:
 
     def client_suffer(self, client_id):
         x, y = self.graph.nodes[client_id]["orig"]
-        edgess = dict(self.graph.edges).copy()
-        for edge in edgess:
-            node1, node2 = edge
-            node1 = self.graph.nodes[node1]["orig"]
-            node2 = self.graph.nodes[node2]["orig"]
-            print(node1, node2, (x, y))
-            self.addPontoDeEmbarque(self.intersection_point(node1, node2, (x, y)))
+        chosen_one = (float("inf"), None, -1)
+        for edge in self.graph.edges:
+            node1_id, node2_id = edge
+            node1 = self.graph.nodes[node1_id]["orig"]
+            node2 = self.graph.nodes[node2_id]["orig"]
             
+            intersection = self.intersection_point(node1, node2, (x, y))
+            dist_node_1 = self.distance(intersection, node1)
+            dist_node_2 = self.distance(intersection, node2)
+
+            loopDistance = None
+
+            if not math.isclose(dist_node_1 + dist_node_2, self.distance(node1, node2)):
+                if dist_node_1 < dist_node_2:
+                    loopDistance = (self.distance((x, y), node1), node1, edge)
+                else:
+                    loopDistance = (self.distance((x, y), node2), node2, edge)
+
+            else:
+                loopDistance = (self.distance((x, y), intersection), intersection, edge)
+
+            if loopDistance[0] < chosen_one[0]: chosen_one = loopDistance
+
+        return {"clientPosition": chosen_one[1], "edge": chosen_one[2]}
+
+        
 
     def getShortestPath(self, origin, destination):
         """
@@ -431,8 +453,10 @@ class Graph:
         return A            
 
 if __name__ == "__main__":
-    fd = open("Input.txt", "r")
+    fd = open("input3.txt", "r")
     g = Graph(fd)
-    clientId = g.addClient((1, 0), (7, 7))
-    g.client_suffer(clientId)
+    clientId = g.addClient((7, 10), (7, 7))
+    coco = g.client_suffer(clientId)
+    g.addPontoDeEmbarque(coco["clientPosition"])
+    print(coco)
     g.showGraph()
