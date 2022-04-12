@@ -97,25 +97,31 @@
                   </div>
                   <div class="modal-body">
                     <form action="/" method="POST">
-                      <input type="text" class="form-control" name="id_street" placeholder="ID da Rua"
-                        aria-label="street_id">
-                      <div class="mt-5">
-                        <label for="formFileMultiple" class="form-label" style="color: black">Ou faça um upload de uma
-                          lista de carros !</label>
-                        <input class="form-control" type="file" name="car-file" multiple>
-                      </div>
+                  <!-- aqui o type nao seria number?--> >    <input type="text" class="form-control" name="id_street" placeholder="ID da Rua"
+                          aria-label="street_id">
+                    </form>>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                      <button type="submit" id="car-form-submit" name="car-form-submit" class="btn btn-primary">Adicionar
+                       Carro</button>
+                    </div>
+                       <form action="/upload_car" method="post" enctype=multipart/form-data>
+                        <div class="mt-5">
+                          <label for="formFileMultiple" class="form-label" style="color: black">Ou faça um upload de uma
+                            lista de carros !</label>
+                          <input class="form-control" type="file" id="formFileMultiple" name="file-car">
+                        </div>
+                        <input type = "submit"/>
+                      </form>
                   </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="submit" id="car-form-submit" name="car-form-submit" class="btn btn-primary">Adicionar
-                      Carro</button>
-                  </div>
-                  </form>
                 </div>
+                
               </div>
+              
             </div>
 
           </li>
+
           <li class="nav-item">
             <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#velocityModal"><i
                 class="fas fa-tachometer-alt"></i></button>
@@ -140,17 +146,21 @@
                       <p></p>
                       <input name="velocity" class="form-control" placeholder="Insira a nova velcidade da rua"
                         aria-label="velocity_entry" type="number" step="0.01">
-                      <div class="mt-5">
-                        <label for="formFileMultiple" class="form-label" style="color: black">Ou faça um upload de um
-                          arquivo !</label>
-                        <input class="form-control" type="file" id="formFileMultiple" multiple>
-                      </div>
                       <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                         <button type="submit" id="velocity-form-submit" name="velocity-form-submit"
                           class="btn btn-primary">Alterar velcidade da via</button>
                       </div>
                     </form>
+                  </form>
+                  <form action="/upload_velocity" method="post" enctype=multipart/form-data>
+                    <div class="mt-5">
+                      <label for="formFileMultiple" class="form-label" style="color: black">Ou faça um upload de um
+                        arquivo !</label>
+                      <input class="form-control" type="file" id="formFileMultiple" name="file-velocity">
+                    </div>
+                    <input type = "submit"/>
+                  </form>
                   </div>
                 </div>
               </div>

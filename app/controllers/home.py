@@ -72,18 +72,25 @@ def upload_client_list():
         print(file)
     return redirect('/')
 
-@app.route('/route_name')
-def method_name():
-    pass
-#
-# leitura
-# def upload_to_client(request)
-#   if request.file
-# f = open('', 'r')
-# return [id_client, loc_x, loc_y, dest_x, dest_y]
+@app.route("/upload_car", methods=['GET', 'POST'])
+def upload_car_list():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file-car' not in request.files:
+            flash('No file part')
+            return redirect('/')
+        file = request.files['file-car']
+        print(file)
+    return redirect('/')
 
-# def upload_to_car(request)
-#   if request.file
-# f = open('', 'r')
-# return [id_car, loc_x, loc_y, dest_x, dest_y]
 
+@app.route("/upload_velocity", methods=['GET', 'POST'])
+def upload_velocity_list():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file-velocity' not in request.files:
+            flash('No file part')
+            return redirect('/')
+        file = request.files['file-velocity']
+        print(file)
+    return redirect('/')
