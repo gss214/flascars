@@ -128,7 +128,7 @@ class Graph:
         )
         return clientId
 
-    def addPontoDeEmbarque(self, position : Tuple[float, float]) -> str:
+    def drawClientOnRoad(self, position : Tuple[float, float]) -> str:       
         """
         Input: position and destination - tuples of x and y coordinates
         Output: Created client's ID
@@ -236,33 +236,82 @@ class Graph:
         # graph_plot.toggle_drag_nodes(False)
         # graph_plot.show('graph2.html')
 
-    def calc_line_equation(self, node1, node2):
+    def calc_line_equation(self, node1 : Tuple[float, float], node2 : Tuple[float, float]) -> Tuple[float, float, float] :
+        """ calculates line coefficients given two points coordinates
+
+        Args:
+            node1 ((float, float)): node coordinates x and y
+            node2 ((float, float)): node coordinates x and y
+
+        Returns:
+            Tuple[float, float, float]: a, b, c coefficients (from ax + by = c)
+        """
+
         a = node2[1] - node1[1]
         b = node1[0] - node2[0]
         c = a*node1[0] + b*node1[1]
         return a, b, c
 
-    def ortogonal(self, client, m):
+    def orthogonal(self, node : Tuple[float, float], m: float) -> Tuple[float, float, float]:
+        """ calculates orthogonal from a given point coordinates x and y
+
+        Args:
+            node (Tuple[float, float]): (x, y) coordinates
+            m (float): angular coefficient
+
+        Returns:
+            Tuple[float, float, float]: a, b, c coefficients (from ax + by = c)
+        """
         a = -m
         b = 1
-        c = client[1] - (m*client[0])
+        c = node[1] - (m*node[0])
         return a, b, c
 
-    def distance(self, node1, node2):
+    def distance(self, node1: Tuple[float, float], node2: Tuple[float, float]) -> float:
+        """ calculates distance between two points coordinates
+
+        Args:
+            node1 (Tuple[float, float]): (x, y) coordinates
+            node2 (Tuple[float, float]): (x, y) coordinates
+
+        Returns:
+            float: distance between two points coordinatess
+        """
+
         return math.sqrt(((node2[0] - node1[0]) ** 2) + ((node2[1] - node1[1]) ** 2))
 
-    def intersection_point(self, node1, node2, client):
+    def intersection_point(self, node1 : Tuple[float, float], node2 : Tuple[float, float], node_to_edge : Tuple[float, float]) -> Tuple[float, float]:
+        """ find intersection point between a pair of nodes and a given node 
+
+        Args:
+            node1 (Tuple[float, float]): (x, y) coordinates
+            node2 (Tuple[float, float]): (x, y) coordinates
+            node_to_edge (Tuple[float, float]): (x, y) coordinates
+
+        Returns:
+            Tuple[float, float]: intersection point coordinates
+        """
+
         normal_eq = self.calc_line_equation(node1, node2)
         if normal_eq[0] == 0:
-            return client[0], normal_eq[2]/normal_eq[1]
-        ortogonal_eq = self.ortogonal(client, normal_eq[1]/normal_eq[0])
-        det = (normal_eq[0] * ortogonal_eq[1]) - (ortogonal_eq[0] * normal_eq[1])
-        x = ((ortogonal_eq[1] * normal_eq[2]) - (normal_eq[1] * ortogonal_eq[2]))/det
-        y = ((normal_eq[0] * ortogonal_eq[2]) - (ortogonal_eq[0] * normal_eq[2]))/det
+            return node_to_edge[0], normal_eq[2]/normal_eq[1]
+        orthogonal_eq = self.orthogonal(node_to_edge, normal_eq[1]/normal_eq[0])
+        det = (normal_eq[0] * orthogonal_eq[1]) - (orthogonal_eq[0] * normal_eq[1])
+        x = ((orthogonal_eq[1] * normal_eq[2]) - (normal_eq[1] * orthogonal_eq[2]))/det
+        y = ((normal_eq[0] * orthogonal_eq[2]) - (orthogonal_eq[0] * normal_eq[2]))/det
         return x, y
 
-    def client_suffer(self, client_id):
-        x, y = self.graph.nodes[client_id]["orig"]
+    def road_approx(self, node_id: str) -> dict[Tuple[float, float], str]:
+        """ finds nearest edge (or node) of a unconnected node
+
+        Args:
+            node_id (str): unconnected node
+
+        Returns:
+            dict[Tuple[float, float], str]: x, y coordinates of approximated point, edge id
+        """
+
+        x, y = self.graph.nodes[node_id]["orig"]
         chosen_one = (float("inf"), None, -1)
         for edge in self.graph.edges:
             node1_id, node2_id = edge
@@ -457,6 +506,6 @@ if __name__ == "__main__":
     g = Graph(fd)
     clientId = g.addClient((7, 10), (7, 7))
     coco = g.client_suffer(clientId)
-    g.addPontoDeEmbarque(coco["clientPosition"])
+    g.drawClientOnRoad(coco["clientPosition"])
     print(coco)
     g.showGraph()
