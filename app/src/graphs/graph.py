@@ -12,6 +12,7 @@ class Graph:
             raise ValueError("File descriptor is none")
         
         self.graph = nx.DiGraph()
+        self.Rgraph = nx.DiGraph()
         self.edges = {}
         self.lastNodeId = 0
         self.clients = {}
@@ -56,6 +57,8 @@ class Graph:
             # Adiciona nos ao grafo. A multiplicacao por 50 é para melhorar a visualização
             self.graph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50)
             self.graph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50)
+            self.Rgraph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50)
+            self.Rgraph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50)
             
             wheight_time = (int(distance)/int(speed))*3600
 
@@ -69,6 +72,7 @@ class Graph:
             self.edges[edge_id] = (node_orig_id, node_dest_id)
             #str(int(distance)/int(speed))
             self.graph.add_edge(node_orig_id, node_dest_id, distance=distance, speed=speed, time=wheight_time, title=edge_title, id=edge_id)
+            self.Rgraph.add_edge(node_dest_id, node_orig_id, distance=distance, speed=speed, time=wheight_time, title=edge_title, id=edge_id)
 
     def genNewId(self):
         self.lastNodeId += 1
@@ -203,21 +207,28 @@ class Graph:
         graph_plot.from_nx(self.graph)
         graph_plot.toggle_physics(False)
 
-        # graph_plot.toggle_drag_nodes(False)
+        graph_plot.toggle_drag_nodes(False)
         graph_plot.show('graph.html')
 
-    """
-        Entrada:
-            self: próprio grafo
-            origin: origem da busca, é um inteiro como string. Ex: '2', '3'
-            destination: destino da busca, segue o mesmo padrão de origin
+        # graph_plot = net.Network(height='100%', width='100%',notebook=False, directed=True)
+        # graph_plot.from_nx(self.Rgraph)
+        # graph_plot.toggle_physics(False)
 
-        Saída:
-            Tupla: (caminho, distancia)
-                caminho: menor caminho encontrado entre a origem e destino
-                distancia: a distância deste menor caminho encontrado
-    """
+        # graph_plot.toggle_drag_nodes(False)
+        # graph_plot.show('graph2.html')
+
     def getShortestPath(self, origin, destination):
+        """
+            Entrada:
+                self: próprio grafo
+                origin: origem da busca, é um inteiro como string. Ex: '2', '3'
+                destination: destino da busca, segue o mesmo padrão de origin
+
+            Saída:
+                Tupla: (caminho, distancia)
+                    caminho: menor caminho encontrado entre a origem e destino
+                    distancia: a distância deste menor caminho encontrado
+        """
         distance, prev = self.dijkstra(origin, destination)
         path = []
 
@@ -233,19 +244,19 @@ class Graph:
         
         return path, distance
 
-    """
-        Entrada:
-            self: próprio grafo
-            origin: origem da busca, é um inteiro como string. Ex: '2', '3'
-            destination: destino da busca, segue o mesmo padrão de origin
-
-        Saída:
-            Tupla: (distancia, anteriores)
-                distancia: a distância deste menor caminho encontrado
-                anteriores: dicionário em que os valores são associados às chaves que eles desembocam
-                    Ex: '2': '1' significa que o vértice 2 é acessível através do vértice 1 (1 -> 2)
-    """
     def dijkstra(self, origin, destination = None):
+        """
+            Entrada:
+                self: próprio grafo
+                origin: origem da busca, é um inteiro como string. Ex: '2', '3'
+                destination: destino da busca, segue o mesmo padrão de origin
+
+            Saída:
+                Tupla: (distancia, anteriores)
+                    distancia: a distância deste menor caminho encontrado
+                    anteriores: dicionário em que os valores são associados às chaves que eles desembocam
+                        Ex: '2': '1' significa que o vértice 2 é acessível através do vértice 1 (1 -> 2)
+        """
         visited = {}
         distances = {}
         pq = PriorityQueue()
@@ -273,19 +284,19 @@ class Graph:
         if destination is None: return distances
         return distances, prev  
 
-    """
-        Entrada:
-            self: próprio grafo
-            origin: origem da busca, é um inteiro como string. Ex: '2', '3'
-            destination: destino da busca, segue o mesmo padrão de origin
-
-        Saída:
-            Tupla: (distancia, anteriores)
-                distancia: a distância deste menor caminho encontrado
-                anteriores: dicionário em que os valores são associados às chaves que eles desembocam
-                    Ex: '2': '1' significa que o vértice 2 é acessível através do vértice 1 (1 -> 2)
-    """
     def yenkShortestPaths(self, origin, destination, k=5):
+        """
+            Entrada:
+                self: próprio grafo
+                origin: origem da busca, é um inteiro como string. Ex: '2', '3'
+                destination: destino da busca, segue o mesmo padrão de origin
+
+            Saída:
+                Tupla: (distancia, anteriores)
+                    distancia: a distância deste menor caminho encontrado
+                    anteriores: dicionário em que os valores são associados às chaves que eles desembocam
+                        Ex: '2': '1' significa que o vértice 2 é acessível através do vértice 1 (1 -> 2)
+        """
         
         # obtém o menor caminho da origem ao destino, além das listas das distâncias a cada vértice
         path, distance = self.getShortestPath(origin, destination)
