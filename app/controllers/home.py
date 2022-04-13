@@ -48,8 +48,8 @@ def from_form_to_client(request):
     return {"position": (loc_x, loc_y), "destination": (dest_x, dest_y)}
 
 def from_form_to_car(request):
-    id_street = request.form.get("id_street")
-    return {"edge_id": id_street}
+    edge_id = request.form.get("edge-id")
+    return {"edge_id": edge_id}
 
 
 def from_form_to_velocity(request):
