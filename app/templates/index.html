@@ -101,12 +101,22 @@
                   <div class="modal-body">
                     <form action="/" method="POST">
                       <div class="input-group">
+                        <div class="row mb-3">
+                          <div class="col">
+                            <input class="form-control" name="car-x" placeholder="Localização x"
+                              aria-label="Localização x" type="number" step="0.01">
+                          </div>
+                          <div class="col">
+                            <input type="number" class="form-control" name="car-y" placeholder="Localização y"
+                              aria-label="Localização y" type="number" step="0.01">
+                          </div>
+                        </div>
                         <select class="custom-select" name="edge-id">
                           {% for edge in streets %}
                           <option value={{edge}}>Rua {{edge}}</option>
                           {% endfor %}
                         </select>
-                        <div class="input-group-append">
+                        <div class="input-group-append mr-3">
                           <button type="submit" id="car-form-submit" name="car-form-submit"
                             class="btn btn-primary">Adicionar Carro</button>
                         </div>

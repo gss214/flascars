@@ -49,7 +49,11 @@ def from_form_to_client(request):
 
 def from_form_to_car(request):
     edge_id = request.form.get("edge-id")
-    return {"edge_id": edge_id}
+    car_x = request.form.get("car-x")
+    car_y = request.form.get("car-y")
+    
+    return {"position": (float(car_x), float(car_y)),
+            "edge_id": edge_id}
 
 
 def from_form_to_velocity(request):
