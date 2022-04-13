@@ -1,14 +1,26 @@
+import os
 from app import app
-from flask import request, render_template, flash, redirect, session
+from flask import request, render_template, flash, redirect
+from werkzeug.utils import secure_filename
+
 
 @app.route("/", methods=['GET', 'POST'])
 def hello_world():
     value = 1
     streets = [1, 2, 4]
-    # [Tempo da viagem, Distância]
-    clients = [ [[45.5, 59.3],  [71.5, 89.8],   [122.7, 124.6], [171.5, 189],   [222.7, 224.6]],
-                [[76, 32.4],    [89.2, 123],    [94, 213],      [100, 250],     [106, 300]]
-              ]
+    clients = [ [
+                {'cost': 10083.6, 'distance': 1545.2, 'path': ['1', '2', '3', '9', '10', '11', '12', '13']}, 
+                {'cost': 21602160.0, 'distance': 1445.2, 'path': ['1', '2', '4', '13']},
+                {'cost': 52413548.0, 'distance': 1345.2, 'path': ['1', '2', '8', '13']},
+                ],[
+                {'cost': 1008515843.6, 'distance': 5148698.2, 'path': ['1', '2', '3', '9', '10', '11', '12', '13']}, 
+                {'cost': 202160.0, 'distance': 156415.2, 'path': ['1', '2', '3', '13']},
+                {'cost': 53548.0, 'distance': 326.2, 'path': ['1', '2', '3', '13']},
+                ],[
+                {'cost': 10083.6, 'distance': 328.2, 'path': ['1', '2', '3', '9', '10', '11', '12', '13']}, 
+                {'cost': 21602160.0, 'distance': 346.2, 'path': ['1', '2', '3', '13']},
+                {'cost': 21602160.0, 'distance': 346.2, 'path': ['1', '0', '7', '3']}
+                ] ]
     if request.method == 'GET':
         print('get')
     else:
@@ -29,68 +41,65 @@ def hello_world():
 
 
 def from_form_to_client(request):
-    if request.form.get('client-file'):
-        client_file = request.form.get('client-file')
-        file = request.files['file']
-        print(type(file))
-        return client_file
-    else:
-        loc_x = float(request.form.get("input-loc-x"))
-        loc_y = float(request.form.get("input-loc-y"))
-        dest_x = float(request.form.get("input-dest-x"))
-        dest_y = float(request.form.get("input-dest-y"))
-        return [loc_x, loc_y, dest_x, dest_y]
-
+    loc_x = float(request.form.get("input-loc-x"))
+    loc_y = float(request.form.get("input-loc-y"))
+    dest_x = float(request.form.get("input-dest-x"))
+    dest_y = float(request.form.get("input-dest-y"))
+    return {"position": (loc_x, loc_y), "destination": (dest_x, dest_y)}
 
 def from_form_to_car(request):
-    if request.form.get('car-file'):
-        car_file = request.form.get('car-file')
-        return car_file
-    else:
-        id_street = int(request.form.get("id_street"))
-        return id_street
+    id_street = request.form.get("id_street")
+    return {"edge_id": id_street}
 
 
 def from_form_to_velocity(request):
-    if request.form.get('velocity-file'):
-        velocity_file = request.form.get('velocity-file')
-        return velocity_file
-    else:
-        street = request.form.get('street-id-velocity')
-        velocity = float(request.form.get("velocity"))
-        return [street, velocity]
+    street = request.form.get('street-id-velocity')
+    speed = float(request.form.get("speed"))
+    return {"edge_id": street, "speed": speed}
 
 
 @app.route("/upload_client", methods=['GET', 'POST'])
 def upload_client_list():
     if request.method == 'POST':
-        # check if the post request has the file part
         if 'file-client' not in request.files:
             flash('No file part')
             return redirect('/')
         file = request.files['file-client']
-        print(file)
+        file.readline()
+        for line in file:
+            values = line.split()
+            client = {  "position": (float(values[1]), float(values[2])), 
+                        "destination": (float(values[3]), float(values[4]))}
+            #TODO addClient(client)
     return redirect('/')
 
 @app.route("/upload_car", methods=['GET', 'POST'])
 def upload_car_list():
     if request.method == 'POST':
-        # check if the post request has the file part
         if 'file-car' not in request.files:
             flash('No file part')
             return redirect('/')
         file = request.files['file-car']
-        print(file)
+        file.readline()
+        for line in file:
+            values = line.split()
+            car = {  "position": (float(values[1]), float(values[2])), 
+                     "edge_id ": values[3]}
+            print(car)
+            #TODO addCar(car)
     return redirect('/')
 
 
-@app.route("/upload_velocity", methods=['GET', 'POST'])
-def upload_velocity_list():
+@app.route("/upload_speed", methods=['GET', 'POST'])
+def upload_speed_list():
     if request.method == 'POST':
-        # check if the post request has the file part
-        if 'file-velocity' not in request.files:
+        if 'file-speed' not in request.files:
             flash('No file part')
             return redirect('/')
-        file = request.files['file-velocity']
-        print(file)
+        file = request.files['file-speed']
+        file.readline()
+        for line in file:
+            values = line.split()
+            speed = {"edge_id": values[0], "speed": float(values[1])}
+            #TODO changeSpeed(speed)
     return redirect('/')

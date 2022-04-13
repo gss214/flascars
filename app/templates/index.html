@@ -67,13 +67,14 @@
                         class="btn btn-primary">Adicionar Cliente</button>
                     </div>
                   </form>
-                  <form action="/upload_client" method="post" enctype=multipart/form-data>
+                  <form action="/upload_client" style="display: flex; flex-flow: column;" method="post" enctype=multipart/form-data>
                     <div class="mt-5">
                       <label for="formFileMultiple" class="form-label" style="color: black">Ou faça um upload de uma
                         lista de clientes !</label>
                       <input class="form-control" type="file" id="formFileMultiple" name="file-client">
                     </div>
-                    <input type = "submit"/>
+                    <input class=" btn btn-primary mt-3 mb-3"
+                        style="justify-content: flex-end; max-width: 40%; align-self: end; margin-right: 16px;" type="submit" />
                   </form>
                 </div>
               </div>
@@ -97,27 +98,33 @@
                   </div>
                   <div class="modal-body">
                     <form action="/" method="POST">
-                  <!-- aqui o type nao seria number?--> >    <input type="text" class="form-control" name="id_street" placeholder="ID da Rua"
-                          aria-label="street_id">
+                      <select id="id_street">
+                        {% for edge in streets %}
+                        <option value={{edge}}>Rua {{edge}}</option>
+                        {% endfor %}
+                      </select>
                     </form>>
                     <div class="modal-footer">
                       <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                      <button type="submit" id="car-form-submit" name="car-form-submit" class="btn btn-primary">Adicionar
-                       Carro</button>
+                      <button type="submit" id="car-form-submit" name="car-form-submit"
+                        class="btn btn-primary">Adicionar
+                        Carro</button>
                     </div>
-                       <form action="/upload_car" method="post" enctype=multipart/form-data>
-                        <div class="mt-5">
-                          <label for="formFileMultiple" class="form-label" style="color: black">Ou faça um upload de uma
-                            lista de carros !</label>
-                          <input class="form-control" type="file" id="formFileMultiple" name="file-car">
-                        </div>
-                        <input type = "submit"/>
-                      </form>
+                    <form action="/upload_car" style="display: flex; flex-flow: column;" method="post"
+                      enctype=multipart/form-data>
+                      <div class="mt-5">
+                        <label for="formFileMultiple" class="form-label" style="color: black">Ou faça um upload de uma
+                          lista de carros!</label>
+                        <input class="form-control" type="file" id="formFileMultiple" name="file-car">
+                      </div>
+                      <input class=" btn btn-primary mt-3 "
+                        style="justify-content: flex-end; max-width: 40%; align-self: end; margin-right: 16px;" type="submit" />
+                    </form>
                   </div>
                 </div>
-                
+
               </div>
-              
+
             </div>
 
           </li>
@@ -144,7 +151,7 @@
                         {% endfor %}
                       </select>
                       <p></p>
-                      <input name="velocity" class="form-control" placeholder="Insira a nova velcidade da rua"
+                      <input name="speed" class="form-control" placeholder="Insira a nova velcidade da rua"
                         aria-label="velocity_entry" type="number" step="0.01">
                       <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
@@ -152,15 +159,18 @@
                           class="btn btn-primary">Alterar velcidade da via</button>
                       </div>
                     </form>
-                  </form>
-                  <form action="/upload_velocity" method="post" enctype=multipart/form-data>
-                    <div class="mt-5">
-                      <label for="formFileMultiple" class="form-label" style="color: black">Ou faça um upload de um
-                        arquivo !</label>
-                      <input class="form-control" type="file" id="formFileMultiple" name="file-velocity">
-                    </div>
-                    <input type = "submit"/>
-                  </form>
+                    </form>
+                    <form action="/upload_speed" style="display: flex; flex-flow: column;" method="post" enctype=multipart/form-data>
+                      <div class="mt-5">
+                        <div class="mb-3">
+                          <label for="formFile" class="form-label">Ou faça um upload de um
+                            arquivo!</label>
+                          <input class="form-control" type="file" id="formFile">
+                        </div>
+                      </div>
+                      <input class=" btn btn-primary mt-3 mb-3"
+                        style="justify-content: flex-end; max-width: 40%; align-self: end; margin-right: 16px;" type="submit" />
+                    </form>
                   </div>
                 </div>
               </div>
@@ -185,15 +195,15 @@
     <div class="client-info p-4">
       <div class="dropdown" style="align-self: flex-start">
         <form action="/" method="POST" name="id">
-            <select id="client-id" onclick="send()" class="form-control form-control-lg primary round-btn" name="id">
-                {% for client in clients %}
-                    {%if loop.index == id_cliente %}
-                        <option selected="selected" value={{loop.index}} >{{loop.index}}</option>
-                    {% else %}
-                        <option value={{loop.index}} >{{loop.index}}</option>
-                    {% endif %}
-                {% endfor %}
-            </select>
+          <select id="client-id" onclick="send()" class="form-control form-control-lg primary round-btn" name="id">
+            {% for client in clients %}
+            {%if loop.index == id_cliente %}
+            <option selected="selected" value={{loop.index}}>{{loop.index}}</option>
+            {% else %}
+            <option value={{loop.index}}>{{loop.index}}</option>
+            {% endif %}
+            {% endfor %}
+          </select>
         </form>
       </div>
       <div class="cliente-choices">
@@ -249,13 +259,14 @@
   </div>
 </body>
 <script>
-    var click = false
-    function send(){   
-        if(click){
-            document.forms["id"].submit(id)
-        }
-        click = true
+  var click = false
+  function send() {
+    if (click) {
+      document.forms["id"].submit(id)
     }
+    click = true
+  }
 </script>
+
 </html>
 {% endblock %}
