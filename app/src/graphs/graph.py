@@ -7,6 +7,8 @@ from typing import Union, Tuple, Dict
 import numpy as np
 import math
 
+from sklearn import metrics
+
 class Graph:
     def __init__(self, fd):
         """_summary_
@@ -90,7 +92,48 @@ class Graph:
         self.lastNodeId += 1
         return self.lastNodeId
 
-    def car_to_node(self, car_id : str) -> Tuple[str, float, float]:
+    def client_to_node(self, client_id : str) -> Tuple[Tuple[str, float, float], Tuple[str, float, float]]:
+        """ Calcula o offset de distância e tempo de um cliente aos vértices mais próximos
+
+        Args:
+            client_id (str): id do cliente
+
+        Returns:
+            Tuple[Tuple[str, float, float], Tuple[str, float, float]]: ((id_da_resta_origem, offset_distancia, offset_tempo), (id_da_resta_destino, offset_distancia, offset_tempo))
+        """
+        dictionary = self.road_approx(client_id)
+        approx_x, approx_y = dictionary['clientPosition']
+        id_node1, id_node2 = dictionary['edge']
+        
+        
+        if (approx_x, approx_y) == self.graph.nodes[id_node1]['orig']:
+            return ((id_node1, 0.0, 0.0), (id_node1, 0.0, 0.0))
+
+        elif (approx_x, approx_y) == self.graph.nodes[id_node2]['orig']:
+            return ((id_node2, 0.0, 0.0), (id_node2, 0.0, 0.0))
+
+        else:
+            node1_p = self.graph.nodes[id_node1]['orig']
+            node2_p = self.graph.nodes[id_node2]['orig']
+
+            distance_node = self.__distance(node1_p, (approx_x, approx_y))
+            distance_total = self.__distance(node1_p, node2_p)
+
+            relative = (distance_node/distance_total)
+
+            real_time = self.graph.edges[id_node1, id_node2]['time']
+            real_distance = self.graph.edges[id_node1, id_node2]['distance']
+
+            dist_offset_orig = relative * real_distance
+            time_offset_orig = relative * real_time
+            dist_offset_dest = (1 - relative) * real_distance
+            time_offset_dest = (1 - relative) * real_time
+
+            return ((id_node1, dist_offset_orig, time_offset_orig), (id_node2, dist_offset_dest, time_offset_dest))
+
+
+
+    def car_to_node(self, position : Tuple[float, float], edge_id : str) -> Tuple[str, float, float]:
         """ Aproxima um carro a um vértice e calcula a distância entre a posição original do carro e o vértice para o qual ele foi aproximado.
 
         Args:
@@ -99,12 +142,14 @@ class Graph:
         Returns:
             (str, float, float): tripla cuja primeira posição corresponde ao id do nó para o qual o carro foi aproximado, a segunda é a distância (em kilometros) entre este nó e a posição original do carro e a terceira o tempo gasto para percorrer esta distância até o nó.
         """
-        carObj = self.cars[car_id]
+        for x in self.cars:
+            print(x)
+        
         # car_edge eh a aresta em que o carro esta
-        car_edge = self.edges[carObj["edge_id"]]
+        car_edge = self.edges[edge_id]
         nodeObj1 = self.graph.nodes[car_edge[0]]["orig"]
         nodeObj2 = self.graph.nodes[car_edge[1]]["orig"]
-        distance_node = self.__distance(nodeObj2, carObj["position"])
+        distance_node = self.__distance(nodeObj2, position)
         distance_total = self.__distance(nodeObj2, nodeObj1)
 
         relative = (distance_node/distance_total)
@@ -122,11 +167,12 @@ class Graph:
         car_title += f"ID = {carId}<br>"
         car_title += f"Position = {position}"
 
-        # aprrox_node, dist_offset, time_offset = self.__car_to_node()
+        # print(carId)
+        aprrox_node, dist_offset, time_offset = self.car_to_node(position, edge_id)
 
         #self.cars[carId] = (position, edge_id, aprrox_node, dist_offset, time_offset)
-        # self.cars[carId] = {'position': position , 'edge_id': edge_id , 'aprrox_node': aprrox_node , 'dist_offset': dist_offset , 'time_offset': time_offset}
-        self.cars[carId] = {'position': position , 'edge_id': edge_id}
+        self.cars[carId] = {'position': position , 'edge_id': edge_id , 'approx_node': aprrox_node , 'dist_offset': dist_offset , 'time_offset': time_offset}
+        # self.cars[carId] = {'position': position , 'edge_id': edge_id}
 
         self.graph.add_node(
             carId,
@@ -350,10 +396,10 @@ class Graph:
         """ finds nearest edge (or node) of a unconnected node
 
         Args:
-            node_id (str): unconnected node
+            node_id (str): unconnected node id
 
         Returns:
-            Dict[Tuple[float, float], str]: x, y coordinates of approximated point, edge id
+            Dict[Tuple[float, float], Tuple[str, str]]: x, y coordinates of approximated point, edge id
         """
 
         x, y = self.graph.nodes[node_id]["orig"]
@@ -409,12 +455,13 @@ class Graph:
         
         return path, distance
 
-    def dijkstra(self, origin : str, destination : str = None, reverse = False):
+    def dijkstra(self, origin : str, destination : str = None, metric: str = "time", reverse = False):
         """
             Entrada:
                 self (graph): próprio grafo
                 origin (string): origem da busca, é um inteiro como string. Ex: '2', '3'
                 destination (string): destino da busca, segue o mesmo padrão de origin
+                metric (string): "time" para calcular considerando o tempo e "distance" a distância
                 reverse (Bool): True se a busca deve ser feita no grafo reverso
 
             Saída:
@@ -437,43 +484,32 @@ class Graph:
             graph = self.graph
 
         visited = {}
-        commute_time = {}
+        route_values = {}
         pq = PriorityQueue()
         prev = {}
 
-        # REVER
-        distance = {}
-
-
         for node in graph.nodes:
             visited[node] = False
-            commute_time[node] = float('inf')
-            distance[node] = float('inf')
+            route_values[node] = float('inf')
 
-        commute_time[origin] = 0
+        route_values[origin] = 0
 
-        # REVER
-        distance[origin] = 0
-
-        pq.put((commute_time[origin], origin))
+        pq.put((route_values[origin], origin))
         while not pq.empty():
             _, current = pq.get()
             if not visited[current]:
                 visited[current] = True
                 for neighbor in list(graph.neighbors(current)):
-                    cost = graph.edges[current, neighbor]["time"]
-                    if commute_time[current] + cost <= commute_time[neighbor]:
-                        commute_time[neighbor] = commute_time[current] + cost
-                        pq.put((commute_time[neighbor], neighbor))
+                    cost = graph.edges[current, neighbor][metric]
+                    if route_values[current] + cost <= route_values[neighbor]:
+                        route_values[neighbor] = route_values[current] + cost
+                        pq.put((route_values[neighbor], neighbor))
                         
-                        # REVER
-                        distance[neighbor] = distance[current] + graph.edges[current, neighbor]['distance']
-
                         prev[neighbor] = current
         
-        if reverse: return commute_time, distance
-        if destination is None: return commute_time
-        return commute_time, prev  
+        if reverse: return route_values
+        if destination is None: return route_values
+        return route_values, prev  
 
     def yenkShortestPaths(self, origin : str, destination : str, k=5):
         """
@@ -570,7 +606,7 @@ class Graph:
         # A = k melhores caminhos
         return A    
 
-    def car_routes(self, client : str, time_offset : float, dist_offset : float):
+    def car_routes(self, client : str, dist_offset : float, time_offset : float):
         """Determina a distância de um cliente para todos os carros livres
 
         Args:
@@ -587,8 +623,8 @@ class Graph:
                 adjusted_times: tempo de viagem do carro até o cliente
         """
         # obtém a distância de um vértice a todos os outros no 
-        #distances = self.dijkstra(client, reverse=True)
-        distances, times = self.dijkstra(client, reverse=True)
+        distances = self.dijkstra(client, metric="distance", reverse=True)
+        times = self.dijkstra(client, metric="time", reverse=True)
         
         adjusted_distances = {}
         adjusted_times = {}
@@ -596,6 +632,10 @@ class Graph:
         # itera por todos os carros
         for key in self.cars:
             # soma a distância do vértice para o qual o carro foi aproximado com o offset de ajuste do carro e do cliente
+            # print("distancia do vertice que o carro foi aproximado", distances[self.cars[key]['approx_node']])
+            # print("offset da distancia do carro", self.cars[key]['dist_offset'])
+            # print("offset do cliente", dist_offset)
+            
             adjusted_distances[key] = distances[self.cars[key]['approx_node']] + self.cars[key]['dist_offset'] + dist_offset
             
             # soma o tempo até o vértice para o qual o carro foi aproximado com o offset de ajuste
@@ -606,12 +646,28 @@ class Graph:
 
 if __name__ == "__main__":
     fd = open("input3.txt", "r")
+    
+    import time
+    print(time.time())
     g = Graph(fd)
-    # clientId = g.addClient((7, 10), (7, 7))
+    print(time.time())
+    
+    clientId = g.addClient((1.5, 1.5), (9, 9))
     # res = g.road_approx(clientId)
     # g.drawClientOnRoad(res["clientPosition"])
     # print(res)
-    carId = g.addCar([1.5, 1.5], "1")
+    carId = g.addCar([2, 1], "7")
+    carId = g.addCar([3, 1], "7")
     # g.calc_offset(carId)
-    print(g.car_to_node(carId))
-    g.showGraph()
+    # print(g.car_to_node(carId))
+    a, b = g.client_to_node(clientId)
+
+    
+    
+    print(g.car_routes(a[0], a[1], a[2]))
+    # print(g.dijkstra('1', reverse=True))
+    # print(a)
+    # print(b)
+    # g.car_routes(string, float1, float2)
+
+    #g.showGraph()
