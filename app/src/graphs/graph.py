@@ -9,7 +9,7 @@ import math
 
 class Graph:
     def __init__(self, fd):
-        """_summary_
+        """Constroi objeto grafo a partir de dado arquivo
 
         Args:
             fd (file_descriptor): descritor do arquivo que servirá para a montagem do grafo
@@ -70,10 +70,15 @@ class Graph:
             if self.lastNodeId < int(node_dest_id): self.lastNodeId = int(node_dest_id)
 
             # Adiciona nos ao grafo. A multiplicacao por 50 é para melhorar a visualização
-            self.graph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50, orig = (node_orig_x, node_orig_y), color=self.colorList[0])
-            self.graph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50, orig = (node_dest_x, node_dest_y), color=self.colorList[0])
-            self.Rgraph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50, orig = (node_orig_x, node_orig_y), color=self.colorList[0])
-            self.Rgraph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50, orig = (node_dest_x, node_dest_y), color=self.colorList[0])
+            edge_orig_title = f"ID = {node_orig_id}<br>"
+            edge_orig_title += f"Position = ({node_orig_x}, {node_orig_y})"
+            edge_dest_title = f"ID = {node_dest_id}<br>"
+            edge_dest_title += f"Position = ({node_dest_x}, {node_dest_y})"
+
+            self.graph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50, orig = (node_orig_x, node_orig_y), color=self.colorList[0], title=edge_orig_title)
+            self.graph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50, orig = (node_dest_x, node_dest_y), color=self.colorList[0], title=edge_dest_title)
+            self.Rgraph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50, orig = (node_orig_x, node_orig_y), color=self.colorList[0], title=edge_orig_title)
+            self.Rgraph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50, orig = (node_dest_x, node_dest_y), color=self.colorList[0], title=edge_dest_title)
             
             wheight_time = (int(distance)/int(speed))*3600
 
@@ -86,8 +91,8 @@ class Graph:
 
             self.edges[edge_id] = (node_orig_id, node_dest_id)
             #str(int(distance)/int(speed))
-            self.graph.add_edge(node_orig_id, node_dest_id, distance=distance, speed=speed, time=wheight_time, title=edge_title, id=edge_id, color=self.colorList[0])
-            self.Rgraph.add_edge(node_dest_id, node_orig_id, distance=distance, speed=speed, time=wheight_time, title=edge_title, id=edge_id, color=self.colorList[0])
+            self.graph.add_edge(node_orig_id, node_dest_id, distance=distance, speed=speed, time=wheight_time, title=edge_title, id=edge_id, color=self.colorList[0], width=1)
+            self.Rgraph.add_edge(node_dest_id, node_orig_id, distance=distance, speed=speed, time=wheight_time, title=edge_title, id=edge_id, color=self.colorList[0], width=1)
 
     def __genNewId(self):
         self.lastNodeId += 1
@@ -279,21 +284,28 @@ class Graph:
             return True
 
     def paintPath(self, path : List[int], color : str = "#303030") -> None:
-        """Paints given path (sequence of connected edges)
-        Input: sequence of adjacent nodes, new color (defalt to asphalt color)
-        Output: None
+        """Pinta dado caminho a partir da cor especificada
+
+        Args:
+            path (List[int]): lista de nos interligados que fecham um caminho
+            color (str, optional): cor desejada. Defaults to "#303030".
+
+        Raises:
+            KeyError: Os vertices passados nao fecham um caminho
         """
         for i in range(len(path)-1):
             try:
                 self.graph.edges[path[i], path[i+1]]["color"] = color            
+                self.graph.edges[path[i], path[i+1]]["width"] = 3            
             except KeyError:
                 print("Os vertices passados nao fecham um caminho")
-                raise
+                raise KeyError
 
     def resetColors(self) -> None:
         """Set all edges to asphalt color"""
         for orig, dest in self.graph.edges:
             self.graph.edges[orig, dest]["color"] = self.colorList[0]
+            self.graph.edges[orig, dest]["width"] = 1
 
     def showGraph(self, reverse = False):
         """Mostra o grafo
@@ -643,19 +655,27 @@ class Graph:
 
 
 if __name__ == "__main__":
-    fd = open("input3.txt", "r")
+    fd = open("input4.txt", "r")
     g = Graph(fd)
-    # clientId = g.addClient((7, 10), (7, 7))
+    clientId = g.addClient((0, 0), (6, 6))
+    clientId2 = g.addClient((2, 4), (7, 3.5))
+    carId = g.addCar((5.5, 3.5), "2")
+    carId2 = g.addCar((8.5, 5), "4")
+    yenk = g.yenkShortestPaths("15", "13")
+    print(yenk)
+    for i in range(1):
+        g.resetColors()
+        g.paintPath(yenk[i]["path"], g.colorList[i+1])
+        g.showGraph()
+        # time.sleep(10)
+
     # res = g.road_approx(clientId)
     # g.drawClientOnRoad(res["clientPosition"])
     # print(res)
-    yenk = g.yenkShortestPaths("1", "14")[0]
-    path = yenk["path"]
-    g.paintPath(path, g.colorList[2])
-    g.resetColors()
+    # path = yenk["path"]
+    # g.resetColors()
     # for i in range(1, 6):
     #     g.changeEdgeColor(str(i), g.colorList[i])
-    carId = g.addCar([1.5, 1.5], "1")
+    # carId = g.addCar([1.5, 1.5], "1")
     # g.calc_offset(carId)
     # print(g.car_to_node(carId))
-    g.showGraph()
