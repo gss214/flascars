@@ -484,11 +484,12 @@ class Graph:
             path.insert(0, destination)
             current = prev[destination]
             
-            while current != origin:
+            if current != origin:
+                while current != origin:
+                    path.insert(0, current)
+                    current = prev[current]
+
                 path.insert(0, current)
-                current = prev[current]
-            
-            path.insert(0, current)
         
         return path, distance
 
@@ -530,6 +531,7 @@ class Graph:
             route_values[node] = float('inf')
 
         route_values[origin] = 0
+        prev[origin] = origin
 
         pq.put((route_values[origin], origin))
         while not pq.empty():
@@ -740,26 +742,23 @@ class Graph:
 
 
 if __name__ == "__main__":
-    fd = open("C:\\Users\\Joaop\\OneDrive\\Documentos\\UnB\\PAA\\App\\flascars\\app\\input3.txt", "r")
+    fd = open("C:\\Users\\Joaop\\OneDrive\\Documentos\\UnB\\PAA\\App\\flascars\\app\\input5.txt", "r")
     
     import time
     print(time.time())
     g = Graph(fd)
     print(time.time())
 
-    carId = g.addCar([3, 1], "7")
-    carId = g.addCar([2, 1], "7")
     
-    
+    # carId = g.addCar([2, 1], "7")
+    # carId = g.addCar([3, 1], "7")
+    # clientId = g.addClient((1.5, 1.5), (11, 9))
 
-    clientId = g.addClient((1.5, 1.5), (11, 9))
-    # res = g.road_approx(clientId)
-    # g.drawClientOnRoad(res["position"])
-    # print(res)
-    
-    # g.calc_offset(carId)
-    # print(g.car_to_node(carId))
-    #a, b = g.client_to_node((1.5, 1.5)
+    clientId = g.addClient((0, 0), (6, 6))
+    clientId2 = g.addClient((2, 4), (7, 3.5))
+    carId = g.addCar((5.5, 3.5), "2")
+    carId2 = g.addCar((8.5, 5), "4")
+
 
     routes = g.client_routes(clientId)
 
