@@ -147,6 +147,15 @@ class Graph:
         )
         return carId
 
+    def removeCar(self, carId):
+        """Remove cars especificado pelo ID
+
+        Args:
+            carId (str): id do carro a ser removido
+        """
+        self.graph.remove_node(carId)
+        del self.cars[carId]
+
     def addClient(self, position : Tuple[float, float], destination : Tuple[float, float]) -> str:
         """
         Input: position and destination - tuples of x and y coordinates
@@ -171,6 +180,15 @@ class Graph:
             color = "#F1919B"
         )
         return clientId
+
+    def removeClient(self, clientId : str) -> None:
+        """Remove cliente especificado pelo ID
+
+        Args:
+            clientId (str): id do cliente a ser removido
+        """
+        self.graph.remove_node(clientId)
+        del self.clients[clientId]
 
     def drawClientOnRoad(self, position : Tuple[float, float]) -> str:       
         """
