@@ -3,7 +3,7 @@ import networkx as nx
 from pyvis import network as net
 import time
 from queue import PriorityQueue
-from typing import Union, Tuple, Dict
+from typing import Union, Tuple, Dict, List
 import numpy as np
 import math
 
@@ -22,7 +22,10 @@ class Graph:
         # Verifica a validade do descritor do arquivo
         if fd is None:
             raise ValueError("File descriptor is none")
-        
+
+        # lista de cores padrao. [0] eh a cor de asfalto (preto)
+        self.colorList = ["#303030", "royalblue", "firebrick", "darkorange", "seagreen", "darkcyan"]
+
         self.graph = nx.DiGraph()
         self.Rgraph = nx.DiGraph()
         self.edges = {}
@@ -67,10 +70,10 @@ class Graph:
             if self.lastNodeId < int(node_dest_id): self.lastNodeId = int(node_dest_id)
 
             # Adiciona nos ao grafo. A multiplicacao por 50 é para melhorar a visualização
-            self.graph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50, orig = (node_orig_x, node_orig_y))
-            self.graph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50, orig = (node_dest_x, node_dest_y))
-            self.Rgraph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50, orig = (node_orig_x, node_orig_y))
-            self.Rgraph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50, orig = (node_dest_x, node_dest_y))
+            self.graph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50, orig = (node_orig_x, node_orig_y), color=self.colorList[0])
+            self.graph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50, orig = (node_dest_x, node_dest_y), color=self.colorList[0])
+            self.Rgraph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50, orig = (node_orig_x, node_orig_y), color=self.colorList[0])
+            self.Rgraph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50, orig = (node_dest_x, node_dest_y), color=self.colorList[0])
             
             wheight_time = (int(distance)/int(speed))*3600
 
@@ -83,8 +86,8 @@ class Graph:
 
             self.edges[edge_id] = (node_orig_id, node_dest_id)
             #str(int(distance)/int(speed))
-            self.graph.add_edge(node_orig_id, node_dest_id, distance=distance, speed=speed, time=wheight_time, title=edge_title, id=edge_id)
-            self.Rgraph.add_edge(node_dest_id, node_orig_id, distance=distance, speed=speed, time=wheight_time, title=edge_title, id=edge_id)
+            self.graph.add_edge(node_orig_id, node_dest_id, distance=distance, speed=speed, time=wheight_time, title=edge_title, id=edge_id, color=self.colorList[0])
+            self.Rgraph.add_edge(node_dest_id, node_orig_id, distance=distance, speed=speed, time=wheight_time, title=edge_title, id=edge_id, color=self.colorList[0])
 
     def __genNewId(self):
         self.lastNodeId += 1
@@ -249,13 +252,48 @@ class Graph:
             orig, dest = self.edges[edge_id]
             distance = self.graph.edges[orig, dest]["distance"]
             wheight_time = (int(distance)/int(speed))*3600
+
             self.graph.edges[orig, dest]["speed"] = speed
+            self.Rgraph.edges[orig, dest]["speed"] = speed
             self.graph.edges[orig, dest]["time"] = wheight_time
+            self.Rgraph.edges[orig, dest]["time"] = wheight_time
+
         except KeyError:
             return False
         else:
             self.__updateTitle(edge_id)
             return True
+
+    def changeEdgeColor(self, edge_id : str, color : str = "#303030"):
+        """
+        Input: edge id, new color (defalt to asphalt color)
+        Output: True if sucessful. False if edge is not found.
+        Behavior: changes color of specified edge
+        """
+        try:
+            orig, dest = self.edges[edge_id]
+            self.graph.edges[orig, dest]["color"] = color
+        except KeyError:
+            return False
+        else:
+            return True
+
+    def paintPath(self, path : List[int], color : str = "#303030") -> None:
+        """Paints given path (sequence of connected edges)
+        Input: sequence of adjacent nodes, new color (defalt to asphalt color)
+        Output: None
+        """
+        for i in range(len(path)-1):
+            try:
+                self.graph.edges[path[i], path[i+1]]["color"] = color            
+            except KeyError:
+                print("Os vertices passados nao fecham um caminho")
+                raise
+
+    def resetColors(self) -> None:
+        """Set all edges to asphalt color"""
+        for orig, dest in self.graph.edges:
+            self.graph.edges[orig, dest]["color"] = self.colorList[0]
 
     def showGraph(self, reverse = False):
         """Mostra o grafo
@@ -611,7 +649,13 @@ if __name__ == "__main__":
     # res = g.road_approx(clientId)
     # g.drawClientOnRoad(res["clientPosition"])
     # print(res)
+    yenk = g.yenkShortestPaths("1", "14")[0]
+    path = yenk["path"]
+    g.paintPath(path, g.colorList[2])
+    g.resetColors()
+    # for i in range(1, 6):
+    #     g.changeEdgeColor(str(i), g.colorList[i])
     carId = g.addCar([1.5, 1.5], "1")
     # g.calc_offset(carId)
-    print(g.car_to_node(carId))
+    # print(g.car_to_node(carId))
     g.showGraph()
