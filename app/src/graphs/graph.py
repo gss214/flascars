@@ -3,7 +3,7 @@ import networkx as nx
 from pyvis import network as net
 import time
 from queue import PriorityQueue
-from typing import Union, Tuple, Dict
+from typing import Union, Tuple, Dict, List
 import numpy as np
 import math
 
@@ -465,7 +465,7 @@ class Graph:
 
         return {"position": chosen_one[1], "edge": chosen_one[2]}
 
-    def getShortestPath(self, origin, destination):
+    def getShortestPath(self, origin : str, destination : str) -> Tuple[List[str], float]:
         """
             Entrada:
                 self: próprio grafo
@@ -548,7 +548,7 @@ class Graph:
         if destination is None: return route_values
         return route_values, prev  
 
-    def yenkShortestPaths(self, origin : str, destination : str, k=5):
+    def yenkShortestPaths(self, origin : str, destination : str, k=5) -> List[Dict]:
         """
             Entrada:
                 self: próprio grafo
@@ -556,10 +556,7 @@ class Graph:
                 destination: destino da busca, segue o mesmo padrão de origin
 
             Saída:
-                Tupla: (distancia, anteriores)
-                    distancia: a distância deste menor caminho encontrado
-                    anteriores: dicionário em que os valores são associados às chaves que eles desembocam
-                        Ex: '2': '1' significa que o vértice 2 é acessível através do vértice 1 (1 -> 2)
+                Lista de dicionários, cujas chaves são 'cost' (custo do caminho) e 'path' (caminho) 
         """
         
         # obtém o menor caminho da origem ao destino, além das listas das distâncias a cada vértice
@@ -680,14 +677,66 @@ class Graph:
 
         return adjusted_distances, adjusted_times
 
-    def client_routes(self, client):
+    def client_routes(self, client : str) -> List[Dict]:
+        """ retorna as 5 menores rotas do cliente até o destino
+        Args:
+            client (client): id do cliente
+
+        Returns:
+            Lista de dicionáros com os caminhos
+        """
+
+        # caminhos do cliente até o destino
         orig = self.clients[client]['approx_node_next']
-        
         
         dest = self.clients[client]['approx_node_dest']
 
-        return self.yenkShortestPaths(orig, dest)
+        paths = self.yenkShortestPaths(orig, dest)
 
+        # adicona os offsets de tempo
+        for path in paths:
+            path['cost'] += self.clients[client]['time_offset_dest'] + self.clients[client]['time_offset_next']
+
+        return paths
+
+    def getCarRoute(self, client_id : str, car_id : str) -> Tuple[float, List[str]]:
+        """ Calcula a distância de um determinado carro até um cliente
+
+        Args:
+            client_id (str): id do cliente
+            car_id (str): id do carro
+
+        Returns:
+            (custo, [caminho])
+        """
+
+        orig = self.cars[car_id]['approx_node']
+        dest = self.clients[client_id]['approx_node_prev']
+        path, costs = self.getShortestPath(orig, dest)
+        cost = costs[dest] + self.cars[car_id]['time_offset'] + self.clients[client_id]['time_offset_prev']
+
+        return cost, path
+
+    def getTotalPath(self, client_id : str, car_id : str, route : Dict) -> Tuple[float, List[str]]:
+        """ Retorna o caminho total de um carro, passando pelo cliente e chegando até o destino.
+
+        Returns:
+            (custo, caminho)
+        """
+        
+        car_client_cost, car_client_path = self.getCarRoute(client_id, car_id)
+
+        if car_client_path[-1] == route['path'][0]:
+            total_path = car_client_path + route['path'][1:]
+        else:
+            total_path = car_client_path + route['path']
+        
+        total_cost = car_client_cost + route['cost']
+
+        return total_cost, total_path
+
+
+        
 
 
 if __name__ == "__main__":
@@ -698,23 +747,29 @@ if __name__ == "__main__":
     g = Graph(fd)
     print(time.time())
 
-    carId = g.addCar([2, 1], "7")
     carId = g.addCar([3, 1], "7")
+    carId = g.addCar([2, 1], "7")
+    
     
 
-    clientId = g.addClient((1.5, 1.5), (2, 1))
+    clientId = g.addClient((1.5, 1.5), (11, 9))
     # res = g.road_approx(clientId)
     # g.drawClientOnRoad(res["position"])
     # print(res)
     
     # g.calc_offset(carId)
     # print(g.car_to_node(carId))
-    #a, b = g.client_to_node((1.5, 1.5))
+    #a, b = g.client_to_node((1.5, 1.5)
 
+    routes = g.client_routes(clientId)
+
+    print("\n5 menores rotas:")
+    for route in routes:
+        print(route)
+
+    print("\nCaminho Total")
+    print(g.getTotalPath(clientId, carId, routes[0]))
     
-    
-    #print(g.car_routes(a[0], a[1], a[2]))
-    print(g.client_routes(clientId))
     g.showGraph()
     # print(g.dijkstra('1', reverse=True))
     # print(a)
