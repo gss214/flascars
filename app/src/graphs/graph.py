@@ -263,6 +263,7 @@ class Graph:
             y = destination[1]*self.zoomOut,
             orig = destination,
             shape = "image",
+            size=15,
             image = ICONS_PATH + "location_mark.svg",
             title = f"Destino do cliente {clientId}<br>Posição: {destination}",
             color = "#gold"
@@ -412,22 +413,35 @@ class Graph:
             self.graph.edges[orig, dest]["color"] = self.colorList[0]
             self.graph.edges[orig, dest]["width"] = 1
 
-    def showGraphRoute(self, path : List, approx_orig : Tuple[float, float], approx_dest : Tuple[float, float]):
+    def showGraphRoute(self, path : List, approx_orig : Tuple[float, float], approx_dest : Tuple[float, float], approx_interm : Tuple[float, float] = None):
         """Mostra o grafo
         Args:
             reverse (bool, optional): True se o objetivo é mostrar o grafo reverso. Padrão é Falso.
         """
 
         color = self.colorList[5]
-        graph_plot = net.Network(height='100%', width='100%',notebook=False, directed=True)
+        graph_plot = net.Network(height='100%', width='100%',notebook=False, directed=True, font_color="#10000000")
         self.paintPath(path, color)
         graph_plot.from_nx(self.graph)
 
         new_id = self.__genNewId()
         new_id2 = self.__genNewId()
+        new_id3 = self.__genNewId()
         destination_mark_id = self.__genNewId()
 
         # todo checar se tem um no na posicao. se tiver, nao sobreescreve e salva o id dele
+
+        if approx_interm != None:
+            graph_plot.add_node(
+                str(new_id3), 
+                x=approx_interm[0]*self.zoomOut, y=approx_interm[1]*self.zoomOut, 
+                title=f"Ponto de embarque do cliente<br>Posição: {approx_interm}",
+                color="#32BA9F",
+                shape="image",
+                label=None,
+                image=ICONS_PATH + "target_destination.svg",
+                size=20
+            )
 
         if approx_dest not in self.nodes:
             graph_plot.add_node(
@@ -947,15 +961,17 @@ if __name__ == "__main__":
     #path = g.getCarRoute(clientId, carId)
     #path2 = g.getCarRoute(clientId2, carId2)[1]
 
-    routes = g.clientRoutes(clientId)[0]
-
-    teste = g.getTotalPath(clientId, carId, routes)
+    routes = g.clientRoutes(clientId2)[0]
+    teste = g.getTotalPath(clientId2, carId, routes)
+    g.showGraphRoute(teste[1], g.graph.nodes[carId]["orig"], g.clients[clientId2]["approx_position_dest"], g.clients[clientId2]["approx_position_orig"])
+    # routes = g.clientRoutes(clientId2)[0]
+    # teste = g.getTotalPath(clientId2, carId2, routes)
+    # g.showGraphRoute(teste[1], g.graph.nodes[carId2]["orig"], g.clients[clientId2]["approx_position_dest"], g.clients[clientId2]["approx_position_orig"])
     
     # g.paintPath(path, g.colorList[1])
     # g.showGraphRoute(path, g.graph.nodes[carId]["orig"], g.clients[clientId]["approx_position_dest"])
     # g.showGraphRoute(path, g.graph.nodes[carId]["orig"], g.clients[clientId]["approx_position_orig"])
     # time.sleep(3)
-    g.showGraphRoute(teste[1], g.graph.nodes[carId]["orig"], g.clients[clientId]["approx_position_dest"])
     # # print(g.dijkstra('1', reverse=True))
     # print(a)
     # print(b)
