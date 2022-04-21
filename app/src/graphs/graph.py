@@ -7,12 +7,9 @@ from typing import Union, Tuple, Dict, List
 import numpy as np
 import math
 
-from sklearn import metrics
-from sklearn.tree import DecisionTreeClassifier
-
 class Graph:
     def __init__(self, fd):
-        """_summary_
+        """Constroi objeto grafo a partir de dado arquivo
 
         Args:
             fd (file_descriptor): descritor do arquivo que servirá para a montagem do grafo
@@ -25,7 +22,10 @@ class Graph:
         # Verifica a validade do descritor do arquivo
         if fd is None:
             raise ValueError("File descriptor is none")
-        
+
+        # lista de cores padrao. [0] eh a cor de asfalto (preto)
+        self.colorList = ["#303030", "royalblue", "firebrick", "darkorange", "seagreen", "darkcyan"]
+
         self.graph = nx.DiGraph()
         self.Rgraph = nx.DiGraph()
         self.edges = {}
@@ -70,10 +70,15 @@ class Graph:
             if self.lastNodeId < int(node_dest_id): self.lastNodeId = int(node_dest_id)
 
             # Adiciona nos ao grafo. A multiplicacao por 50 é para melhorar a visualização
-            self.graph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50, orig = (node_orig_x, node_orig_y))
-            self.graph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50, orig = (node_dest_x, node_dest_y))
-            self.Rgraph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50, orig = (node_orig_x, node_orig_y))
-            self.Rgraph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50, orig = (node_dest_x, node_dest_y))
+            edge_orig_title = f"ID = {node_orig_id}<br>"
+            edge_orig_title += f"Position = ({node_orig_x}, {node_orig_y})"
+            edge_dest_title = f"ID = {node_dest_id}<br>"
+            edge_dest_title += f"Position = ({node_dest_x}, {node_dest_y})"
+
+            self.graph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50, orig = (node_orig_x, node_orig_y), color=self.colorList[0], title=edge_orig_title)
+            self.graph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50, orig = (node_dest_x, node_dest_y), color=self.colorList[0], title=edge_dest_title)
+            self.Rgraph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50, orig = (node_orig_x, node_orig_y), color=self.colorList[0], title=edge_orig_title)
+            self.Rgraph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50, orig = (node_dest_x, node_dest_y), color=self.colorList[0], title=edge_dest_title)
             
             wheight_time = (int(distance)/int(speed))*3600
 
@@ -86,14 +91,14 @@ class Graph:
 
             self.edges[edge_id] = (node_orig_id, node_dest_id)
             #str(int(distance)/int(speed))
-            self.graph.add_edge(node_orig_id, node_dest_id, distance=distance, speed=speed, time=wheight_time, title=edge_title, id=edge_id)
-            self.Rgraph.add_edge(node_dest_id, node_orig_id, distance=distance, speed=speed, time=wheight_time, title=edge_title, id=edge_id)
+            self.graph.add_edge(node_orig_id, node_dest_id, distance=distance, speed=speed, time=wheight_time, title=edge_title, id=edge_id, color=self.colorList[0], width=1)
+            self.Rgraph.add_edge(node_dest_id, node_orig_id, distance=distance, speed=speed, time=wheight_time, title=edge_title, id=edge_id, color=self.colorList[0], width=1)
 
     def __genNewId(self):
         self.lastNodeId += 1
         return self.lastNodeId
 
-    def client_to_node(self, position: Tuple[float, float]) -> Tuple[Tuple[str, float, float], Tuple[str, float, float]]:
+    def clientToNode(self, position: Tuple[float, float]) -> Tuple[Tuple[str, float, float], Tuple[str, float, float]]:
         """ Calcula o offset de distância e tempo de um cliente aos vértices mais próximos
 
         Args:
@@ -102,7 +107,7 @@ class Graph:
         Returns:
             Tuple[Tuple[str, float, float], Tuple[str, float, float]]: ((id_da_resta_origem, offset_distancia, offset_tempo), (id_da_resta_destino, offset_distancia, offset_tempo))
         """
-        dictionary = self.road_approx(position)
+        dictionary = self.roadApprox(position)
         approx_x, approx_y = dictionary['position']
         id_node1, id_node2 = dictionary['edge']
         
@@ -132,9 +137,7 @@ class Graph:
 
             return ((id_node1, dist_offset_orig, time_offset_orig), (id_node2, dist_offset_dest, time_offset_dest))
 
-
-
-    def car_to_node(self, position : Tuple[float, float], edge_id : str) -> Tuple[str, float, float]:
+    def carToNode(self, position : Tuple[float, float], edge_id : str) -> Tuple[str, float, float]:
         """ Aproxima um carro a um vértice e calcula a distância entre a posição original do carro e o vértice para o qual ele foi aproximado.
 
         Args:
@@ -173,7 +176,7 @@ class Graph:
         car_title += f"Position = {position}"
 
         # print(carId)
-        aprrox_node, dist_offset, time_offset = self.car_to_node(position, edge_id)
+        aprrox_node, dist_offset, time_offset = self.carToNode(position, edge_id)
 
         #self.cars[carId] = (position, edge_id, aprrox_node, dist_offset, time_offset)
         self.cars[carId] = {'position': position , 'edge_id': edge_id , 'approx_node': aprrox_node , 'dist_offset': dist_offset , 'time_offset': time_offset}
@@ -190,6 +193,15 @@ class Graph:
         )
         return carId
 
+    def removeCar(self, carId):
+        """Remove cars especificado pelo ID
+
+        Args:
+            carId (str): id do carro a ser removido
+        """
+        self.graph.remove_node(carId)
+        del self.cars[carId]
+
     def addClient(self, position : Tuple[float, float], destination : Tuple[float, float]) -> str:
         """
         Input: position and destination - tuples of x and y coordinates
@@ -202,15 +214,19 @@ class Graph:
         edge_title += f"Origem = {position}<br>"
         edge_title += f"Destino = {destination}"
 
-        client_offset = self.client_to_node(position)
-        dest_offset = self.dest_to_node(destination)
+        client_offset = self.clientToNode(position)
+        dest_offset = self.destToNode(destination)
         
         approx_node_prev, dist_offset_prev, time_offset_prev = client_offset[0]
         approx_node_next, dist_offset_next, time_offset_next = client_offset[1]
-        approx_node_dest, time_offset_dest = dest_offset
+        approx_node_dest, time_offset_dest, (x_approx, y_approx) = dest_offset
 
-        self.clients[clientId] = {'position': position, 'destination': destination, 'approx_node_prev': approx_node_prev, 'dist_offset_prev': dist_offset_prev, 'time_offset_prev': time_offset_prev, 'approx_node_next': approx_node_next, 'dist_offset_next': dist_offset_next, 'time_offset_next': time_offset_next,
-        'approx_node_dest': approx_node_dest, 'time_offset_dest': time_offset_dest}
+        self.clients[clientId] = {'position': position, 'destination': destination,
+        'approx_node_prev': approx_node_prev, 'dist_offset_prev': dist_offset_prev, 
+        'time_offset_prev': time_offset_prev, 'approx_node_next': approx_node_next,
+        'dist_offset_next': dist_offset_next, 'time_offset_next': time_offset_next,
+        'approx_node_dest': approx_node_dest, 'time_offset_dest': time_offset_dest,
+        'approx_position_dest': (x_approx, y_approx)}
 
         self.graph.add_node(
             clientId,
@@ -222,7 +238,26 @@ class Graph:
             title = edge_title,
             color = "#F1919B"
         )
+        self.graph.add_node(
+            "-" + clientId,
+            x = destination[0]*50,
+            y = destination[1]*50,
+            orig = destination,
+            shape = "star",
+            title = f"Destino do cliente {clientId}<br>Posição: {destination}",
+            color = "#gold"
+        )
         return clientId
+
+    def removeClient(self, clientId : str) -> None:
+        """Remove cliente especificado pelo ID
+
+        Args:
+            clientId (str): id do cliente a ser removido
+        """
+        self.graph.remove_node(clientId)
+        self.graph.remove_node("-" + clientId)
+        del self.clients[clientId]
 
     def drawClientOnRoad(self, position : Tuple[float, float]) -> str:       
         """
@@ -241,8 +276,6 @@ class Graph:
             color = "yellow"
         )
 
-    # def addCar(position):
-
     def getSpeed(self, edge_id : str) -> Union[float, None]:
         """
         Input: edge's id
@@ -257,7 +290,7 @@ class Graph:
         else:
             return speed
 
-    def get__Distance(self, edge_id : str) -> Union[float, None]:
+    def getDistance(self, edge_id : str) -> Union[float, None]:
         """
         Input: edge's id
         Output: edge's distance
@@ -309,13 +342,93 @@ class Graph:
             orig, dest = self.edges[edge_id]
             distance = self.graph.edges[orig, dest]["distance"]
             wheight_time = (int(distance)/int(speed))*3600
+
             self.graph.edges[orig, dest]["speed"] = speed
+            self.Rgraph.edges[orig, dest]["speed"] = speed
             self.graph.edges[orig, dest]["time"] = wheight_time
+            self.Rgraph.edges[orig, dest]["time"] = wheight_time
+
         except KeyError:
             return False
         else:
             self.__updateTitle(edge_id)
             return True
+
+    def changeEdgeColor(self, edge_id : str, color : str = "#303030"):
+        """
+        Input: edge id, new color (defalt to asphalt color)
+        Output: True if sucessful. False if edge is not found.
+        Behavior: changes color of specified edge
+        """
+        try:
+            orig, dest = self.edges[edge_id]
+            self.graph.edges[orig, dest]["color"] = color
+        except KeyError:
+            return False
+        else:
+            return True
+
+    def paintPath(self, path : List[int], color : str = "#303030") -> None:
+        """Pinta dado caminho a partir da cor especificada
+
+        Args:
+            path (List[int]): lista de nos interligados que fecham um caminho
+            color (str, optional): cor desejada. Defaults to "#303030".
+
+        Raises:
+            KeyError: Os vertices passados nao fecham um caminho
+        """
+        for i in range(len(path)-1):
+            try:
+                self.graph.edges[path[i], path[i+1]]["color"] = color            
+                self.graph.edges[path[i], path[i+1]]["width"] = 3            
+            except KeyError:
+                print("Os vertices passados nao fecham um caminho")
+                raise KeyError
+
+    def resetColors(self) -> None:
+        """Set all edges to asphalt color"""
+        for orig, dest in self.graph.edges:
+            self.graph.edges[orig, dest]["color"] = self.colorList[0]
+            self.graph.edges[orig, dest]["width"] = 1
+
+    def showGraphRoute(self, path, clientId):
+        """Mostra o grafo
+        Args:
+            reverse (bool, optional): True se o objetivo é mostrar o grafo reverso. Padrão é Falso.
+        """
+        self.graph
+
+        graph_plot = net.Network(height='100%', width='100%',notebook=False, directed=True)
+        self.paintPath(path, self.colorList[1])
+        graph_plot.from_nx(self.graph)
+
+        approx_position = self.clients[clientId]["approx_position_dest"]
+        new_id = self.__genNewId()
+
+        graph_plot.add_node(
+            str(new_id), 
+            x=approx_position[0]*50, y=approx_position[1]*50, 
+            title=f"Ponto de desembarque do cliente {clientId}<br>Posição: {approx_position}",
+            color="#32BA9F",
+            shape="triangle",
+            size=10
+        )
+
+        last_node_position = self.graph.nodes[path[-1]]["orig"]
+        if last_node_position != approx_position:
+            graph_plot.add_edge(
+                path[-1],
+                str(new_id), 
+                title="qualquer coisa aqui",
+                color=self.colorList[1],
+                width=3
+            )
+            path.append(str(new_id))
+
+        graph_plot.toggle_physics(False)
+        graph_plot.toggle_drag_nodes(False)
+        graph_plot.show('graph.html')
 
     def showGraph(self, reverse = False):
         """Mostra o grafo
@@ -331,17 +444,10 @@ class Graph:
         graph_plot.from_nx(graph)
         graph_plot.toggle_physics(False)
 
-        #graph_plot.toggle_drag_nodes(False)
+        graph_plot.toggle_drag_nodes(False)
         graph_plot.show('graph.html')
 
-        # graph_plot = net.Network(height='100%', width='100%',notebook=False, directed=True)
-        # graph_plot.from_nx(self.Rgraph)
-        # graph_plot.toggle_physics(False)
-
-        # graph_plot.toggle_drag_nodes(False)
-        # graph_plot.show('graph2.html')
-
-    def __calc_line_equation(self, node1 : Tuple[float, float], node2 : Tuple[float, float]) -> Tuple[float, float, float] :
+    def __calcLineEquation(self, node1 : Tuple[float, float], node2 : Tuple[float, float]) -> Tuple[float, float, float] :
         """ calculates line coefficients given two points coordinates
 
         Args:
@@ -385,7 +491,7 @@ class Graph:
 
         return math.sqrt(((node2[0] - node1[0]) ** 2) + ((node2[1] - node1[1]) ** 2))
 
-    def __intersection_point(self, node1 : Tuple[float, float], node2 : Tuple[float, float], node_to_edge : Tuple[float, float]) -> Tuple[float, float]:
+    def __intersectionPoint(self, node1 : Tuple[float, float], node2 : Tuple[float, float], node_to_edge : Tuple[float, float]) -> Tuple[float, float]:
         """ find intersection point between a pair of nodes and a given node 
 
         Args:
@@ -397,7 +503,7 @@ class Graph:
             Tuple[float, float]: intersection point coordinates
         """
 
-        normal_eq = self.__calc_line_equation(node1, node2)
+        normal_eq = self.__calcLineEquation(node1, node2)
         if normal_eq[0] == 0:
             return node_to_edge[0], normal_eq[2]/normal_eq[1]
         orthogonal_eq = self.__orthogonal(node_to_edge, normal_eq[1]/normal_eq[0])
@@ -406,9 +512,16 @@ class Graph:
         y = ((normal_eq[0] * orthogonal_eq[2]) - (orthogonal_eq[0] * normal_eq[2]))/det
         return x, y
 
-    def dest_to_node(self, position : Tuple[float, float]) -> Tuple[str, float]:
+    def destToNode(self, position : Tuple[float, float]) -> Tuple[str, float, Tuple[float, float]]:
+        """Aproxima o destino ao grafo
 
-        dictionary = self.road_approx(position)
+        Args:
+            position (Tuple[float, float]): posição x, y do no
+
+        Returns:
+            Tuple[str, float]: tupla (id do nó ao qual o destino foi aproximado; offset do peso; (x, y) aproximados)
+        """
+        dictionary = self.roadApprox(position)
         edge_id = dictionary['edge']
 
          # dest_edge eh a aresta em que o carro esta
@@ -426,10 +539,9 @@ class Graph:
         if self.__distance(nodeObj2, position) == 0:
             return (dest_edge[1], 0)
 
-        return (dest_edge[0], self.graph.edges[dest_edge[0], dest_edge[1]]["time"] * relative)
+        return (dest_edge[0], self.graph.edges[dest_edge[0], dest_edge[1]]["time"] * relative, dictionary["position"])
 
-
-    def road_approx(self, position: Tuple[float, float]) -> Dict[Tuple[float, float], str]:
+    def roadApprox(self, position: Tuple[float, float]) -> Dict[Tuple[float, float], str]:
         """ finds nearest edge (or node) of a unconnected node
 
         Args:
@@ -446,7 +558,7 @@ class Graph:
             node1 = self.graph.nodes[node1_id]["orig"]
             node2 = self.graph.nodes[node2_id]["orig"]
             
-            intersection = self.__intersection_point(node1, node2, (x, y))
+            intersection = self.__intersectionPoint(node1, node2, (x, y))
             dist_node_1 = self.__distance(intersection, node1)
             dist_node_2 = self.__distance(intersection, node2)
 
@@ -642,7 +754,7 @@ class Graph:
         # A = k melhores caminhos
         return A    
 
-    def car_routes(self, client : str, dist_offset : float, time_offset : float):
+    def carRoutes(self, client : str, dist_offset : float, time_offset : float):
         """Determina a distância de um cliente para todos os carros livres
 
         Args:
@@ -679,7 +791,7 @@ class Graph:
 
         return adjusted_distances, adjusted_times
 
-    def client_routes(self, client : str) -> List[Dict]:
+    def clientRoutes(self, client : str) -> List[Dict]:
         """ retorna as 5 menores rotas do cliente até o destino
         Args:
             client (client): id do cliente
@@ -737,42 +849,47 @@ class Graph:
 
         return total_cost, total_path
 
-
-        
-
-
 if __name__ == "__main__":
-    fd = open("C:\\Users\\Joaop\\OneDrive\\Documentos\\UnB\\PAA\\App\\flascars\\app\\input5.txt", "r")
-    
-    import time
-    print(time.time())
+    fd = open("input4.txt", "r")
     g = Graph(fd)
-    print(time.time())
-
-    
-    # carId = g.addCar([2, 1], "7")
-    # carId = g.addCar([3, 1], "7")
-    # clientId = g.addClient((1.5, 1.5), (11, 9))
-
     clientId = g.addClient((0, 0), (6, 6))
     clientId2 = g.addClient((2, 4), (7, 3.5))
     carId = g.addCar((5.5, 3.5), "2")
     carId2 = g.addCar((8.5, 5), "4")
 
-
-    routes = g.client_routes(clientId)
+    routes = g.clientRoutes(clientId)
 
     print("\n5 menores rotas:")
     for route in routes:
         print(route)
 
     print("\nCaminho Total")
-    print(g.getTotalPath(clientId, carId, routes[0]))
+    path = g.getTotalPath(clientId, carId, routes[0])[1]
+
     
-    g.showGraph()
+    # g.paintPath(path, g.colorList[1])
+    g.showGraphRoute(path, clientId)
     # print(g.dijkstra('1', reverse=True))
     # print(a)
     # print(b)
-    # g.car_routes(string, float1, float2)
+    # g.carRoutes(string, float1, float2)
 
   
+    # yenk = g.yenkShortestPaths("15", "13")
+    # print(yenk)
+    # for i in range(1):
+    #     g.resetColors()
+    #     g.paintPath(yenk[i]["path"], g.colorList[i+1])
+    #     g.showGraph()
+        # time.sleep(10)
+
+    # res = g.roadApprox(clientId)
+    # g.drawClientOnRoad(res["clientPosition"])
+    # print(res)
+    # path = yenk["path"]
+    # g.resetColors()
+    # for i in range(1, 6):
+    #     g.changeEdgeColor(str(i), g.colorList[i])
+    # carId = g.addCar([1.5, 1.5], "1")
+    # g.calc_offset(carId)
+    # print(g.carToNode(carId))
