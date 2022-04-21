@@ -25,6 +25,7 @@ class Graph:
 
         # lista de cores padrao. [0] eh a cor de asfalto (preto)
         self.colorList = ["#303030", "royalblue", "firebrick", "darkorange", "seagreen", "darkcyan"]
+        self.zoomOut = 85
 
         self.graph = nx.DiGraph()
         self.Rgraph = nx.DiGraph()
@@ -32,6 +33,7 @@ class Graph:
         self.lastNodeId = 0
         self.clients = {}
         self.cars = {}
+        self.nodes = {}
 
         # Pula o cabeçalho do arquivo de entrada
         fd.readline()
@@ -75,10 +77,12 @@ class Graph:
             edge_dest_title = f"ID = {node_dest_id}<br>"
             edge_dest_title += f"Position = ({node_dest_x}, {node_dest_y})"
 
-            self.graph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50, orig = (node_orig_x, node_orig_y), color=self.colorList[0], title=edge_orig_title)
-            self.graph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50, orig = (node_dest_x, node_dest_y), color=self.colorList[0], title=edge_dest_title)
-            self.Rgraph.add_node(node_orig_id, x = node_orig_x*50, y = node_orig_y*50, orig = (node_orig_x, node_orig_y), color=self.colorList[0], title=edge_orig_title)
-            self.Rgraph.add_node(node_dest_id, x = node_dest_x*50, y = node_dest_y*50, orig = (node_dest_x, node_dest_y), color=self.colorList[0], title=edge_dest_title)
+            self.nodes[(node_orig_x, node_orig_y)] = node_orig_id
+            self.nodes[(node_dest_x, node_dest_y)] = node_dest_id
+            self.graph.add_node(node_orig_id, x = node_orig_x*self.zoomOut, y = node_orig_y*self.zoomOut, orig = (node_orig_x, node_orig_y), color=self.colorList[0], title=edge_orig_title)
+            self.graph.add_node(node_dest_id, x = node_dest_x*self.zoomOut, y = node_dest_y*self.zoomOut, orig = (node_dest_x, node_dest_y), color=self.colorList[0], title=edge_dest_title)
+            self.Rgraph.add_node(node_orig_id, x = node_orig_x*self.zoomOut, y = node_orig_y*self.zoomOut, orig = (node_orig_x, node_orig_y), color=self.colorList[0], title=edge_orig_title)
+            self.Rgraph.add_node(node_dest_id, x = node_dest_x*self.zoomOut, y = node_dest_y*self.zoomOut, orig = (node_dest_x, node_dest_y), color=self.colorList[0], title=edge_dest_title)
             
             wheight_time = (int(distance)/int(speed))*3600
 
@@ -98,25 +102,24 @@ class Graph:
         self.lastNodeId += 1
         return self.lastNodeId
 
-    def clientToNode(self, position: Tuple[float, float]) -> Tuple[Tuple[str, float, float], Tuple[str, float, float]]:
+    def clientToNode(self, position: Tuple[float, float]) -> Tuple[Tuple[str, float, float], Tuple[str, float, float], Tuple[float, float]]:
         """ Calcula o offset de distância e tempo de um cliente aos vértices mais próximos
 
         Args:
             position (Tuple[float, float]): posição do cliente
 
         Returns:
-            Tuple[Tuple[str, float, float], Tuple[str, float, float]]: ((id_da_resta_origem, offset_distancia, offset_tempo), (id_da_resta_destino, offset_distancia, offset_tempo))
+            Tuple[Tuple[str, float, float], Tuple[str, float, float]]: ((id_da_resta_origem, offset_distancia, offset_tempo), (id_da_resta_destino, offset_distancia, offset_tempo), (approx_x, approx_y))
         """
         dictionary = self.roadApprox(position)
         approx_x, approx_y = dictionary['position']
         id_node1, id_node2 = dictionary['edge']
-        
-        
+                
         if (approx_x, approx_y) == self.graph.nodes[id_node1]['orig']:
-            return ((id_node1, 0.0, 0.0), (id_node1, 0.0, 0.0))
+            return ((id_node1, 0.0, 0.0), (id_node1, 0.0, 0.0), (approx_x, approx_y))
 
         elif (approx_x, approx_y) == self.graph.nodes[id_node2]['orig']:
-            return ((id_node2, 0.0, 0.0), (id_node2, 0.0, 0.0))
+            return ((id_node2, 0.0, 0.0), (id_node2, 0.0, 0.0), (approx_x, approx_y))
 
         else:
             node1_p = self.graph.nodes[id_node1]['orig']
@@ -135,7 +138,7 @@ class Graph:
             dist_offset_dest = (1 - relative) * real_distance
             time_offset_dest = (1 - relative) * real_time
 
-            return ((id_node1, dist_offset_orig, time_offset_orig), (id_node2, dist_offset_dest, time_offset_dest))
+            return ((id_node1, dist_offset_orig, time_offset_orig), (id_node2, dist_offset_dest, time_offset_dest), (approx_x, approx_y))
 
     def carToNode(self, position : Tuple[float, float], edge_id : str) -> Tuple[str, float, float]:
         """ Aproxima um carro a um vértice e calcula a distância entre a posição original do carro e o vértice para o qual ele foi aproximado.
@@ -179,13 +182,15 @@ class Graph:
         aprrox_node, dist_offset, time_offset = self.carToNode(position, edge_id)
 
         #self.cars[carId] = (position, edge_id, aprrox_node, dist_offset, time_offset)
+        self.nodes[position] = carId
         self.cars[carId] = {'position': position , 'edge_id': edge_id , 'approx_node': aprrox_node , 'dist_offset': dist_offset , 'time_offset': time_offset}
         # self.cars[carId] = {'position': position , 'edge_id': edge_id}
 
         self.graph.add_node(
             carId,
-            x = position[0]*50,
-            y = position[1]*50,
+            x = position[0]*self.zoomOut,
+            y = position[1]*self.zoomOut,
+            orig = position,
             edge = edge_id,
             shape = "square",
             title = car_title,
@@ -219,19 +224,21 @@ class Graph:
         
         approx_node_prev, dist_offset_prev, time_offset_prev = client_offset[0]
         approx_node_next, dist_offset_next, time_offset_next = client_offset[1]
-        approx_node_dest, time_offset_dest, (x_approx, y_approx) = dest_offset
+        x_approx_orig, y_approx_orig = client_offset[2]
+        approx_node_dest, time_offset_dest, (x_approx_dest, y_approx_dest) = dest_offset
 
+        self.nodes[position] = clientId
         self.clients[clientId] = {'position': position, 'destination': destination,
         'approx_node_prev': approx_node_prev, 'dist_offset_prev': dist_offset_prev, 
         'time_offset_prev': time_offset_prev, 'approx_node_next': approx_node_next,
         'dist_offset_next': dist_offset_next, 'time_offset_next': time_offset_next,
         'approx_node_dest': approx_node_dest, 'time_offset_dest': time_offset_dest,
-        'approx_position_dest': (x_approx, y_approx)}
+        'approx_position_dest': (x_approx_dest, y_approx_dest), 'approx_position_orig': (x_approx_orig, y_approx_orig)}
 
         self.graph.add_node(
             clientId,
-            x = position[0]*50,
-            y = position[1]*50,
+            x = position[0]*self.zoomOut,
+            y = position[1]*self.zoomOut,
             orig = position,
             dest = destination,
             shape = "diamond",
@@ -240,8 +247,8 @@ class Graph:
         )
         self.graph.add_node(
             "-" + clientId,
-            x = destination[0]*50,
-            y = destination[1]*50,
+            x = destination[0]*self.zoomOut,
+            y = destination[1]*self.zoomOut,
             orig = destination,
             shape = "star",
             title = f"Destino do cliente {clientId}<br>Posição: {destination}",
@@ -269,8 +276,8 @@ class Graph:
         print(starId)
         self.graph.add_node(
             starId,
-            x = position[0]*50,
-            y = position[1]*50,
+            x = position[0]*self.zoomOut,
+            y = position[1]*self.zoomOut,
             orig = position,
             shape = "star",
             color = "yellow"
@@ -392,39 +399,69 @@ class Graph:
             self.graph.edges[orig, dest]["color"] = self.colorList[0]
             self.graph.edges[orig, dest]["width"] = 1
 
-    def showGraphRoute(self, path, clientId):
+    def showGraphRoute(self, path : List, approx_orig : Tuple[float, float], approx_dest : Tuple[float, float]):
         """Mostra o grafo
         Args:
             reverse (bool, optional): True se o objetivo é mostrar o grafo reverso. Padrão é Falso.
         """
-        self.graph
 
         graph_plot = net.Network(height='100%', width='100%',notebook=False, directed=True)
         self.paintPath(path, self.colorList[1])
         graph_plot.from_nx(self.graph)
 
-        approx_position = self.clients[clientId]["approx_position_dest"]
         new_id = self.__genNewId()
+        new_id2 = self.__genNewId()
 
-        graph_plot.add_node(
-            str(new_id), 
-            x=approx_position[0]*50, y=approx_position[1]*50, 
-            title=f"Ponto de desembarque do cliente {clientId}<br>Posição: {approx_position}",
-            color="#32BA9F",
-            shape="triangle",
-            size=10
-        )
+        # todo checar se tem um no na posicao. se tiver, nao sobreescreve e salva o id dele
+
+        if approx_dest not in self.nodes:
+            graph_plot.add_node(
+                str(new_id), 
+                x=approx_dest[0]*self.zoomOut, y=approx_dest[1]*self.zoomOut, 
+                title=f"Ponto de desembarque do cliente<br>Posição: {approx_dest}",
+                color="#32BA9F",
+                shape="triangle",
+                size=10
+            )
+        else:
+            new_id = self.nodes[approx_dest]
+
+        if approx_orig not in self.nodes:
+            graph_plot.add_node(
+                str(new_id2), 
+                x=approx_orig[0]*self.zoomOut, y=approx_orig[1]*self.zoomOut, 
+                # title=f"Ponto de desembarque do cliente<br>Posição: {approx_dest}",
+                color="#32BA9F",
+                shape="triangleDown",
+                size=10
+            )
+        else:
+            new_id2 = self.nodes[approx_orig]
+
+        print(graph_plot.get_nodes())
 
         last_node_position = self.graph.nodes[path[-1]]["orig"]
-        if last_node_position != approx_position:
+        first_node_position = self.graph.nodes[path[0]]["orig"]
+
+        if last_node_position != approx_dest:
             graph_plot.add_edge(
                 path[-1],
                 str(new_id), 
-                title="qualquer coisa aqui",
+                # title="qualquer coisa aqui",
                 color=self.colorList[1],
                 width=3
             )
             path.append(str(new_id))
+
+        if first_node_position != approx_orig:
+            graph_plot.add_edge(
+                str(new_id2),
+                path[0],
+                # title="qualquer coisa aqui",
+                color=self.colorList[1],
+                width=3
+            )
+            path.insert(0, new_id2)
 
         graph_plot.toggle_physics(False)
         graph_plot.toggle_drag_nodes(False)
@@ -864,11 +901,15 @@ if __name__ == "__main__":
         print(route)
 
     print("\nCaminho Total")
-    path = g.getTotalPath(clientId, carId, routes[0])[1]
+    path = g.getCarRoute(clientId, carId)[1]
+    path2 = g.getCarRoute(clientId2, carId2)[1]
 
     
     # g.paintPath(path, g.colorList[1])
-    g.showGraphRoute(path, clientId)
+    # g.showGraphRoute(path, g.graph.nodes[carId]["orig"], g.clients[clientId]["approx_position_dest"])
+    g.showGraphRoute(path, g.graph.nodes[carId]["orig"], g.clients[clientId]["approx_position_orig"])
+    time.sleep(3)
+    g.showGraphRoute(path2, g.graph.nodes[carId2]["orig"], g.clients[clientId2]["approx_position_orig"])
     # print(g.dijkstra('1', reverse=True))
     # print(a)
     # print(b)
