@@ -34,6 +34,10 @@ class Graph:
         self.clients = {}
         self.cars = {}
         self.nodes = {}
+        self.waitTime = 0
+        self.travelTime = 0
+        self.totalTime = 0
+        self.numberOfTravels = 0
 
         # Pula o cabeçalho do arquivo de entrada
         fd.readline()
@@ -884,7 +888,32 @@ class Graph:
         
         total_cost = car_client_cost + route['cost']
 
+        self.updateMetric(car_client_cost, route['cost'], total_cost)
+
         return total_cost, total_path
+
+    def updateMetric(self, wait_time : float, travel_time : float, total_time : float) -> None:
+        """Update das métricas "wait time" e "travel time"
+
+        Simplesmente coloque o tempo de espera total que o último cliente sofreu, assim como o tempo de viagem.
+
+        Args:
+            wait_time (float): novo wait time
+            travel_time (float): novo travel time
+        """
+        self.waitTime += wait_time
+        self.travelTime += travel_time
+        self.totalTime += total_time
+        self.numberOfTravels += 1
+
+    def getMetrics(self) -> Tuple[float, float]:
+        """Retorna uma tupla com as métricas
+
+        Returns:
+            Tuple[float, float]: Média do wait time e média do travel time
+        """
+        if self.numberOfTravels == 0: return (0, 0)
+        return (self.waitTime / self.numberOfTravels, self.travelTime / self.numberOfTravels)
 
 if __name__ == "__main__":
     fd = open("input4.txt", "r")
