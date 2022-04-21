@@ -955,7 +955,7 @@ if __name__ == "__main__":
     # g.showGraphRoute(path, g.graph.nodes[carId]["orig"], g.clients[clientId]["approx_position_dest"])
     # g.showGraphRoute(path, g.graph.nodes[carId]["orig"], g.clients[clientId]["approx_position_orig"])
     # time.sleep(3)
-    g.showGraphRoute(teste[1], g.graph.nodes[carId]["orig"], g.clients[clientId]["approx_position_orig"])
+    g.showGraphRoute(teste[1], g.graph.nodes[carId]["orig"], g.clients[clientId]["approx_position_dest"])
     # # print(g.dijkstra('1', reverse=True))
     # print(a)
     # print(b)
