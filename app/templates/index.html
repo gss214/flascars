@@ -198,6 +198,43 @@
   <div class="banner">
   </div>
 
+  <div class="container-fluid mt-3">
+    <div class="row g-0">
+      <div class="col-3" style="display: flex; justify-content: center;">
+        <div class="card" style="width: 20vw;">
+          <div class="card-body" style="display: flex;flex-flow: column;align-items: center;">
+            <h5 class="card-title">Taxa de carros por cliente</h5>
+            <h6 class="card-subtitle mb-2 text-muted">3 carros/cliente</h6>
+          </div>
+        </div>
+      </div>
+      <div class="col-3" style="display: flex; justify-content: center;">
+        <div class="card" style="width: 20vw;">
+          <div class="card-body" style="display: flex;flex-flow: column;align-items: center;">
+            <h5 class="card-title">Tempo médio de espera dos clientes</h5>
+            <h6 class="card-subtitle mb-2 text-muted" style="align-self: center;">5 minutos</h6>
+          </div>
+        </div>
+      </div>
+      <div class="col-3" style="display: flex; justify-content: center;">
+        <div class="card" style="width: 20vw;">
+          <div class="card-body" style="display: flex;flex-flow: column;align-items: center;">
+            <h5 class="card-title">Tempo médio de viagem</h5>
+            <h6 class="card-subtitle mb-2 text-muted">30 minutos</h6>
+          </div>
+        </div>
+      </div>
+      <div class="col-3" style="display: flex; justify-content: center;">
+        <div class="card" style="width: 20vw;">
+          <div class="card-body" style="display: flex;flex-flow: column;align-items: center;">
+            <h5 class="card-title">Distância média percorrida</h5>
+            <h6 class="card-subtitle mb-2 text-muted">5 km</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="graph-container mt-5">
     <div class="graph">
       <iframe src="{{ url_for('static', filename='graph.html') }}"
@@ -232,40 +269,28 @@
           </div>
         </div>
         {% endfor %}
-
       </div>
-
+      <a href="/delete/client/{{id_cliente}}" class="btn btn-danger" style="align-self: flex-start"><i class="fas fa-trash-alt"></i></a>
+    </div>
+    <div class="client-info p-4" style="justify-content: space-between;">
+      <div class="dropdown" style="align-self: flex-start">
+        <form action="/" method="POST" name="idCar">
+          <select id="idCar" onclick="sendCar()" class="form-control primary round-btn" name="idCar" style="background-color: #28A745 !important;">
+            {% for car in cars %}
+            {%if loop.index == id_car %}
+            <option selected="selected" value={{loop.index}}>{{loop.index}}</option>
+            {% else %}
+            <option value={{loop.index}}>{{loop.index}}</option>
+            {% endif %}
+            {% endfor %}
+          </select>
+        </form>
+      </div>
+      <a href="/delete/car/{{id_car}}" class="btn btn-danger" style="align-self: flex-start"><i class="fas fa-trash-alt"></i></a>
     </div>
   </div>
 
-  <div class="container-fluid">
-    <div class="row g-0">
-      <div class="col-3">
-        <div class="card-body">
-          <h5 class="card-title">Taxa de carros por cliente</h5>
-          <p class="card-text" id="rate_car_client"></p>
-        </div>
-      </div>
-      <div class="col-3">
-        <div class="card-body">
-          <h5 class="card-title">Tempo médio de espera dos clientes</h5>
-          <p class="card-text" id="average_wait"></p>
-        </div>
-      </div>
-      <div class="col-3">
-        <div class="card-body">
-          <h5 class="card-title">Tempo médio de viagem</h5>
-          <p class="card-text" id="average_time"></p>
-        </div>
-      </div>
-      <div class="col-3">
-        <div class="card-body">
-          <h5 class="card-title">Distância média percorrida</h5>
-          <p class="card-text" id="average_distance"></p>
-        </div>
-      </div>
-    </div>
-  </div>
+
 
   <div class="footer px-3">
     <p class="mt-2 mr-3 mb-1">UNB - 04/2022</p>
@@ -279,6 +304,13 @@
       document.forms["id"].submit(id)
     }
     click = true
+  }
+  var clickCar = false
+  function sendCar() {
+    if (clickCar) {
+      document.forms["idCar"].submit(idCar)
+    }
+    clickCar = true
   }
 </script>
 

@@ -26,7 +26,6 @@ html *
 }
 .client-info-container{
    margin: auto;
-   min-height: 70vh;
    width: 70vw;
    display: flex;
    justify-content: center;

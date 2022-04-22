@@ -7,7 +7,9 @@ g = Graph(open('app/files/paa_arquivo.txt'))
 @app.route("/", methods=['GET', 'POST'])
 def hello_world():
     value = 1
+    carValue = 1
     streets = [1, 2, 4]
+    cars = [1,2,3,4,5]
     clients = [ [
                 {'cost': 10.5, 'distance': 9.2, 'path': ['1', '2', '3', '9', '10', '11', '12', '13']}, 
                 {'cost': 2, 'distance': 3.2, 'path': ['1', '2', '4', '13']},
@@ -33,11 +35,13 @@ def hello_world():
             retorno = g.addCar(data['position'], data['edge_id'])
         elif "id" in request.form:
             value = int(request.form.get('id'))
+        elif "idCar" in request.form:
+            carValue = int(request.form.get('idCar'))
         else:
             data = from_form_to_velocity(request)
             retorno = g.changeSpeed(data['edge_id'], data['speed'])
        
-    return render_template('index.html', streets=streets, clients=clients, id_cliente=value)
+    return render_template('index.html', streets=streets, clients=clients, id_cliente=value, id_car=carValue, cars=cars)
 
 
 def from_form_to_client(request):
@@ -107,4 +111,16 @@ def upload_speed_list():
             speed = {"edge_id": values[0], "speed": float(values[1])}
             g.changeSpeed(speed)
     return redirect('/')
-    
+
+@app.route("/delete/client/<id>", methods=['GET', 'POST'])
+def delete_client(id):
+    print(id)
+    retorno = g.removeClient(id)
+    print(retorno)
+    return redirect('/')
+@app.route("/delete/car/<id>", methods=['GET', 'POST'])
+def delete_car(id):
+    print(id)
+    retorno = g.removeCar(id)
+    print(retorno)
+    return redirect('/')
