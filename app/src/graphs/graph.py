@@ -497,7 +497,7 @@ class Graph:
    
         graph_plot.toggle_physics(False)
         graph_plot.toggle_drag_nodes(False)
-        graph_plot.show('graph.html')
+        graph_plot.show('app/static/graph.html')
 
     def showGraph(self, reverse = False):
         """Mostra o grafo
@@ -509,12 +509,12 @@ class Graph:
         if reverse:
             graph = self.Rgraph
 
-        graph_plot = net.Network(height='100%', width='100%',notebook=False, directed=True)
+        graph_plot = net.Network(height='100%', width='100%',notebook=False, directed=True, font_color="#10000000")
         graph_plot.from_nx(graph)
         graph_plot.toggle_physics(False)
 
         graph_plot.toggle_drag_nodes(False)
-        graph_plot.show('graph.html')
+        graph_plot.show('app/static/graph.html')
 
     def __calcLineEquation(self, node1 : Tuple[float, float], node2 : Tuple[float, float]) -> Tuple[float, float, float] :
         """ calculates line coefficients given two points coordinates

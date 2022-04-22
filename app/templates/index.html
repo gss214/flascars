@@ -248,17 +248,17 @@
         <form action="/" method="POST" name="id">
           <select id="client-id" onclick="send()" class="form-control form-control-lg primary round-btn" name="id">
             {% for client in clients %}
-            {%if loop.index == id_cliente %}
-            <option selected="selected" value={{loop.index}}>{{loop.index}}</option>
+            {%if client == id_cliente %}
+            <option selected="selected" value={{client}}>{{client}}</option>
             {% else %}
-            <option value={{loop.index}}>{{loop.index}}</option>
+            <option value={{client}}>{{client}}</option>
             {% endif %}
             {% endfor %}
           </select>
         </form>
       </div>
       <div class="cliente-choices">
-        {% for data in clients[id_cliente-1] %}
+        <!-- {% for data in clients[id_cliente] %}
         <div class="my-2" style="display: flex; flex-direction: collum; justify-content: center;">
           <div class="line p-3 info-btn" style="border-radius: 5px; border: 1px solid #BEBEBE; align-items: center;">
             <button type="button" class="btn btn-secondary mr-2" style="border-radius: 50px">{{loop.index}}</button>
@@ -268,7 +268,7 @@
             </div>
           </div>
         </div>
-        {% endfor %}
+        {% endfor %} -->
       </div>
       <a href="/delete/client/{{id_cliente}}" class="btn btn-danger" style="align-self: flex-start"><i class="fas fa-trash-alt"></i></a>
     </div>
@@ -277,14 +277,22 @@
         <form action="/" method="POST" name="idCar">
           <select id="idCar" onclick="sendCar()" class="form-control primary round-btn" name="idCar" style="background-color: #28A745 !important;">
             {% for car in cars %}
-            {%if loop.index == id_car %}
-            <option selected="selected" value={{loop.index}}>{{loop.index}}</option>
+            {%if car == id_car %}
+            <option selected="selected" value={{car}}>{{car}}</option>
             {% else %}
-            <option value={{loop.index}}>{{loop.index}}</option>
+            <option value={{car}}>{{car}}</option>
             {% endif %}
             {% endfor %}
           </select>
         </form>
+      </div>
+      <div onclick="selectRoute(id_cliente, id_car)" class="my-2" style="display: flex; flex-direction: collum; justify-content: center;">
+        <div class="line p-3 info-btn" style="border-radius: 5px; border: 1px solid #BEBEBE; align-items: center;">
+          <div class="info-label ml-2 px-3">
+            <p class="mr-5 ml- mb-0">Tempo de espera: {{(time[id_car]//60)|int}} min {{(time[id_car]%60)|int}} s</p>
+            <p class="mb-0 mr-4">Distância até o cliente: {{'%0.1f'|format(dist[id_car])}} km</p>
+          </div>
+        </div>
       </div>
       <a href="/delete/car/{{id_car}}" class="btn btn-danger" style="align-self: flex-start"><i class="fas fa-trash-alt"></i></a>
     </div>
@@ -311,6 +319,9 @@
       document.forms["idCar"].submit(idCar)
     }
     clickCar = true
+  }
+  function selectRoute(id_cliente, id_car) {
+    document.location.href = '/selectRoute/'+id_cliente+'/'+ id_car
   }
 </script>
 
