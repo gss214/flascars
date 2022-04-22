@@ -6,27 +6,15 @@ from app.src.graphs.graph import Graph
 g = Graph(open('app/files/paa_arquivo.txt'))
 @app.route("/", methods=['GET', 'POST'])
 def hello_world():
-    value = 1
-    carValue = 1
-    streets = [1, 2, 4]
-    cars = [1,2,3,4,5]
-    clients = [ [
-                {'cost': 10.5, 'distance': 9.2, 'path': ['1', '2', '3', '9', '10', '11', '12', '13']}, 
-                {'cost': 2, 'distance': 3.2, 'path': ['1', '2', '4', '13']},
-                {'cost': 50, 'distance': 55.2, 'path': ['1', '2', '8', '13']},
-                ],[
-                {'cost': 58, 'distance': 58.2, 'path': ['1', '2', '3', '9', '10', '11', '12', '13']}, 
-                {'cost': 2, 'distance': 5.2, 'path': ['1', '2', '3', '13']},
-                {'cost': 59, 'distance': 60.2, 'path': ['1', '2', '3', '13']},
-                ],[
-                {'cost': 16, 'distance': 8.2, 'path': ['1', '2', '3', '9', '10', '11', '12', '13']}, 
-                {'cost': 60, 'distance': 90.2, 'path': ['1', '2', '3', '13']},
-                {'cost': 21, 'distance': 20.8, 'path': ['1', '6', '7', '13']}
-                ] ]
+    dist = None
+    times = None
+    streets = list(g.edges.keys())
+    cars = list(g.cars.keys())
+    clients = list(g.clients.keys())
+
     if request.method == 'GET':
         print('get')
     else:
-        print(request.form)
         if "client-form-submit" in request.form:
             data = from_form_to_client(request)
             retorno = g.addClient(data['position'], data['destination'])
@@ -34,14 +22,26 @@ def hello_world():
             data = from_form_to_car(request)
             retorno = g.addCar(data['position'], data['edge_id'])
         elif "id" in request.form:
-            value = int(request.form.get('id'))
+            value = request.form.get('id')
+            dist,times = g.carRoutes(g.clients[value]["approx_node_prev"], g.clients[value]["dist_offset_prev"], g.clients[value]["time_offset_prev"])
         elif "idCar" in request.form:
             carValue = int(request.form.get('idCar'))
         else:
             data = from_form_to_velocity(request)
             retorno = g.changeSpeed(data['edge_id'], data['speed'])
-       
-    return render_template('index.html', streets=streets, clients=clients, id_cliente=value, id_car=carValue, cars=cars)
+    g.showGraph()
+    streets = list(g.edges.keys())
+    cars = list(g.cars.keys())
+    clients = list(g.clients.keys())
+    if cars != []: 
+        carValue = cars[0]
+    else:
+        carValue = 0
+    if clients !=[]:
+        value = clients[0]
+    else :
+        value = 0
+    return render_template('index.html', streets=streets, clients=clients, id_cliente=value, id_car=carValue, cars=cars, dist=dist, time=times)
 
 
 def from_form_to_client(request):
@@ -114,13 +114,15 @@ def upload_speed_list():
 
 @app.route("/delete/client/<id>", methods=['GET', 'POST'])
 def delete_client(id):
-    print(id)
-    retorno = g.removeClient(id)
-    print(retorno)
+    g.removeClient(id)
     return redirect('/')
 @app.route("/delete/car/<id>", methods=['GET', 'POST'])
 def delete_car(id):
-    print(id)
-    retorno = g.removeCar(id)
-    print(retorno)
+    g.removeCar(id)
+    return redirect('/')
+
+@app.route("/selectRoute/<id_client>/<id_car>", methods=['GET', 'POST'])
+def select_route(id_client,id_car):
+    _ ,rotas = g.getCarRoute(id_client,id_car)
+    g.showGraphRoute(rotas,g.graph.nodes[id_car]["orig"], g.clients[id_client]["approx_position_dest"], g.clients[id_client]["approx_position_orig"])
     return redirect('/')
