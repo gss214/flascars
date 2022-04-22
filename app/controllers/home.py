@@ -1,9 +1,9 @@
-import os
 from app import app
 from flask import request, render_template, flash, redirect
 from werkzeug.utils import secure_filename
+from app.src.graphs.graph import Graph
 
-
+g = Graph(open('app/files/paa_arquivo.txt'))
 @app.route("/", methods=['GET', 'POST'])
 def hello_world():
     value = 1
@@ -27,16 +27,16 @@ def hello_world():
         print(request.form)
         if "client-form-submit" in request.form:
             data = from_form_to_client(request)
-            print(data)
+            retorno = g.addClient(data['position'], data['destination'])
         elif "car-form-submit" in request.form:
             data = from_form_to_car(request)
-            print(data)
+            retorno = g.addCar(data['position'], data['edge_id'])
         elif "id" in request.form:
             value = int(request.form.get('id'))
         else:
             data = from_form_to_velocity(request)
-            print(data)
-    
+            retorno = g.changeSpeed(data['edge_id'], data['speed'])
+       
     return render_template('index.html', streets=streets, clients=clients, id_cliente=value)
 
 
@@ -74,7 +74,7 @@ def upload_client_list():
             values = line.split()
             client = {  "position": (float(values[1]), float(values[2])), 
                         "destination": (float(values[3]), float(values[4]))}
-            #TODO addClient(client)
+            g.addClient(client)
     return redirect('/')
 
 @app.route("/upload_car", methods=['GET', 'POST'])
@@ -90,7 +90,7 @@ def upload_car_list():
             car = {  "position": (float(values[1]), float(values[2])), 
                      "edge_id ": values[3]}
             print(car)
-            #TODO addCar(car)
+            g.addCar(car)
     return redirect('/')
 
 
@@ -105,5 +105,6 @@ def upload_speed_list():
         for line in file:
             values = line.split()
             speed = {"edge_id": values[0], "speed": float(values[1])}
-            #TODO changeSpeed(speed)
+            g.changeSpeed(speed)
     return redirect('/')
+    
