@@ -1,4 +1,5 @@
 from operator import itemgetter
+from xmlrpc.client import Boolean
 import networkx as nx
 from pyvis import network as net
 import time
@@ -811,17 +812,29 @@ class Graph:
         if reverse: return route_values
         if destination is None: return route_values
         return route_values, prev 
+ 
+    def __getAllCosts(self) -> Dict[str, float]:
+        """Recupera o valor de cada aresta
 
-    # Recupera o valor de cada aresta
-    def __getAllCosts(self):
+        Returns:
+            Dict[float]: Pesos das arestas
+        """
         costs = {}
         for edge in self.graph.edges:
             value = self.graph.edges[edge[0], edge[1]]['time']
             costs[(edge[0], edge[1])] = value
         return costs
 
-    # Calcula o custo de um caminho
-    def __getCostFromPath(self, path, weights):
+    def __getCostFromPath(self, path : List[str], weights : Dict[str, float]) -> float:
+        """Calcula o custo de um caminho
+
+        Args:
+            path (List[str]): Caminho
+            weights (Dict[float]): Pesos das arestas
+
+        Returns:
+            float: custo do caminho
+        """
         cost = 0
         for i in range(0, len(path)-1):
             cost += weights[(path[i], path[i+1])]
@@ -873,32 +886,32 @@ class Graph:
                     
                     # se o tamanho do caminho atual for maior que j
                     # e o caminho para análise for igual ao caminho atual (até o vértice de refinamento -- incluso)
-                    if len(current_path) - 1 > j and path_root == current_path[:j+1]:
-
-                        # Remove todas as arestas que vao para os nos na raiz
-                        for edge in self.graph.edges:
-                            if edge[1] == current_path[j]:
-                                weight = self.graph.edges[edge[0], edge[1]]['time']
-                                removed_edges.append((edge[0], edge[1], weight))
-                                self.graph.edges[edge[0], edge[1]]['time'] = float('inf')
-                        
+                    if len(current_path) - 1 > j and path_root == current_path[:j+1]:     
                         # backup do peso da aresta
                         weight = self.graph.edges[current_path[j], current_path[j+1]]['time']
                         
                         # caso o peso seja infinito apenas pulamos a iteração
                         if weight == float('inf'):
                             continue
-                        
+
                         # muda temporariamente o peso (tempo de travessia) da aresta para infinito
                         removed_edges.append((current_path[j], current_path[j+1], weight))
                         self.graph.edges[current_path[j], current_path[j+1]]['time'] = float('inf')
+
+                # Remove todas as arestas que vao para os nos na raiz
+                for l in range(len(path_root)):
+                    for edge in self.graph.edges:
+                        if edge[1] == path_root[l]:
+                            weight = self.graph.edges[edge[0], edge[1]]['time']
+                            removed_edges.append((edge[0], edge[1], weight))
+                            self.graph.edges[edge[0], edge[1]]['time'] = float('inf')    
 
                 # obtém um novo caminho e vetor de distâncias, dessa vez indo do nó de refinamento até o destino 
                 # (Busca alternativas desse nó de refinamento até o destino)
                 path_spur, distance_spur = self.getShortestPath(spur_node, destination)
 
                 # Se encontrou um novo caminho
-                if path_spur:
+                if path_spur and distance_spur[destination] != float('inf'):
                     # o caminho total passa a ser o caminho original concatenado com o novo caminho encontrado
                     path_total = path_root[:-1] + path_spur
 
@@ -927,6 +940,7 @@ class Graph:
                 break
         
         # A = k melhores caminhos
+    
         return A    
 
     def carRoutes(self, client_id : str):
@@ -1068,6 +1082,52 @@ class Graph:
         if self.numberOfTravels == 0: return (0, 0)
         return (self.waitTime / self.numberOfTravels, self.travelTime / self.numberOfTravels)
 
+    def valid_paths(self, paths : List[Dict[float, List[str]]], orig : str = '', dest : str = '') -> Boolean:
+        """ Verifica se um caminho existe e não tem loops
+
+        Args:
+            paths (List[Dict[float, List[str]]]): retorno do yen, lista de dicionários cuja primeira chave é o peso do caminho e a segunda uma lista de strings contendo o caminho
+
+        Raises:
+            KeyError: Os vértices não formam um caminho
+
+        Returns:
+            Boolean:True se os vértices fecharem um caminho
+        """
+
+        for dict in paths:
+            path = dict['path']
+
+            if len(path) == 0:
+                return True
+
+            if len(path) != len(set(path)):
+                raise Exception("Existe um loop no caminho de: " + orig + " ate " + dest + "\n" + str(path))
+
+            for i in range(len(path)-1):
+                try:
+                    _ = self.graph.edges[path[i], path[i+1]]           
+                    _ = self.graph.edges[path[i], path[i+1]]           
+                except Exception:
+                    raise Exception("Os vertices passados nao fecham um caminho de :" + orig + " ate " + dest + "\n" + str(path))
+
+        return True
+
+    def valid_all_paths(self):
+        """ Valida todos os caminhos de entre vértices no grafo
+        """
+
+        for orig_pos in self.nodes:
+            orig = self.nodes[orig_pos]
+            for dest_pos in self.nodes:
+                dest = self.nodes[dest_pos]
+                paths = self.yenkShortestPaths(orig, dest)
+                if g.valid_paths(paths, orig, dest):
+                    number_of_paths = str(len(paths))
+                    print("Os " + number_of_paths + " caminhos de " + orig + " até " + dest + " são válidos")
+                    
+        print("\nTodos os caminhos encontrados são válidos")
+
 if __name__ == "__main__":
     fd = open("input5.txt", "r")
     g = Graph(fd)
@@ -1091,7 +1151,43 @@ if __name__ == "__main__":
     #path = g.getCarRoute(clientId, carId)
     #path2 = g.getCarRoute(clientId2, carId2)[1]
 
-    print(g.yenkShortestPaths('6', '11'))
+    g.valid_all_paths()
+
+    """Teste de caminhos um atras do outro"""
+    # import copy
+    # #backup = copy.deepcopy(g)
+    # paths = g.yenkShortestPaths('6', '11')
+    # if g.valid_paths(paths):
+    #     print("Caminhos válidos")
+
+    # print("\nCaminhos:")
+    # for dict in paths:
+    #     path = dict['path']
+    #     print(path)
+
+    # print("\nRodando de novo\n")
+
+    # paths = g.yenkShortestPaths('1', '11')
+    # # if g.valid_paths(paths):
+    # #     print("Caminhos válidos")
+
+    # print("\nCaminhos:")
+    # for dict in paths:
+    #     path = dict['path']
+    #     print(path)
+
+    """Fim do teste de caminhos um atras do outro"""
+
+    # """Arestas antes do yen"""
+
+    # for edge in g.graph.edges:
+    #     print(edge, g.graph.edges[edge]['time'])
+
+    # paths = g.yenkShortestPaths('16', '6')
+    # print("\n")
+    # " Arestas depois do yen"
+    # for edge in g.graph.edges:
+    #     print(edge, g.graph.edges[edge]['time'])
 
     # routes = g.clientRoutes(clientId2)[0]
     # path3 = routes["path"]
@@ -1119,7 +1215,7 @@ if __name__ == "__main__":
     # for i in range(1):
     #     g.resetColors()
     #     g.paintPath(yenk[i]["path"], g.colorList[i+1])
-    #     g.showGraph()
+    g.showGraph()
         # time.sleep(10)
 
     # res = g.roadApprox(clientId)
