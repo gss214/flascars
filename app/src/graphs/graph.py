@@ -961,11 +961,16 @@ class Graph:
         
         dest = self.clients[client]['approx_node_dest']
 
-        paths = self.yenkShortestPaths(orig, dest)
+        betweenTime = self.clients[client]['time_offset_dest'] - self.clients[client]['time_offset_prev']
 
-        # adicona os offsets de tempo
-        for path in paths:
-            path['cost'] += self.clients[client]['time_offset_dest'] + self.clients[client]['time_offset_next']
+        if dest == self.clients[client]['approx_node_prev'] and betweenTime >= 0:
+            paths = [{'path': [], 'cost': betweenTime}]
+        else:
+            paths = self.yenkShortestPaths(orig, dest)
+
+            # adicona os offsets de tempo
+            for path in paths:
+                path['cost'] += self.clients[client]['time_offset_dest'] + self.clients[client]['time_offset_next']
 
         return paths
 
@@ -1003,10 +1008,11 @@ class Graph:
         
         car_client_cost, car_client_path = self.getCarRoute(client_id, car_id)
 
-        if car_client_path[-1] == route['path'][0]:
+        if car_client_path != [] and car_client_path[-1] == route['path'][0]:
             total_path = car_client_path + route['path'][1:]
         else:
             total_path = car_client_path + route['path']
+
         
         total_cost = car_client_cost + route['cost']
 
@@ -1041,7 +1047,7 @@ if __name__ == "__main__":
     fd = open("input5.txt", "r")
     g = Graph(fd)
     clientId = g.addClient((0, 0), (6, 6))
-    clientId2 = g.addClient((2, 4), (7, 3.5))
+    clientId2 = g.addClient((2, 4), (2.8, 4))
     # clientId2 = g.addClient((2, 4), (2, 4))
     carId = g.addCar((5.5, 3.5), "2")
     carId2 = g.addCar((8.5, 5), "4")
@@ -1053,8 +1059,8 @@ if __name__ == "__main__":
     print(route2)
 
     # print("\n5 menores rotas:")
-    for route in routes:
-        print(route)
+    # for route in routes:
+    #     print(route)
 
     # print("\nCaminho Total")
     #path = g.getCarRoute(clientId, carId)
@@ -1062,8 +1068,8 @@ if __name__ == "__main__":
 
     routes = g.clientRoutes(clientId2)[0]
     path3 = routes["path"]
-    # teste = g.getTotalPath(clientId2, carId3, routes)
-    # print(teste)
+    teste = g.getTotalPath(clientId2, carId3, routes)
+    print(teste)
     # g.showGraphRoute(teste[1], g.graph.nodes[carId3]["orig"], g.clients[clientId2]["approx_position_dest"], g.clients[clientId2]["approx_position_orig"])
     # g.showGraphRoute(path3, g.clients[clientId2]["approx_position_orig"], g.clients[clientId2]["approx_position_dest"])
     g.showGraphRoute(route2, g.graph.nodes[carId3]["orig"], g.clients[clientId2]["approx_position_orig"])
