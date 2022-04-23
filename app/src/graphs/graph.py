@@ -42,6 +42,7 @@ class Graph:
         self.waitTime = 0
         self.travelTime = 0
         self.totalTime = 0
+        self.totalDistance = 0
         self.numberOfTravels = 0
 
         # Pula o cabeçalho do arquivo de entrada
@@ -176,13 +177,13 @@ class Graph:
 
         return (car_edge[1], self.graph.edges[car_edge[0], car_edge[1]]["distance"] * relative, self.graph.edges[car_edge[0], car_edge[1]]["time"] * relative)
 
-    def addCar(self, position : Tuple[float, float], edge_id : str) -> str:
+    def addCar(self, position : Tuple[float, float], edge_id : str, carId : str = None) -> str:
         """
-        Input: position - tuple of x and y coordinates, id of which edge the car is currently on
+        Input: position - tuple of x and y coordinates, id of which edge the car is currently on. Optionally, 
         Output: Created car ID
         Behavior: Creates new car as an unconnected node in the graph
         """
-        carId = str(self.__genNewId())
+        if carId is None: carId = str(self.__genNewId())
 
         # print(carId)
         aprrox_node, dist_offset, time_offset = self.carToNode(position, edge_id)
@@ -255,7 +256,7 @@ class Graph:
         approx_node_prev, dist_offset_prev, time_offset_prev = client_offset[0]
         approx_node_next, dist_offset_next, time_offset_next = client_offset[1]
         x_approx_orig, y_approx_orig = client_offset[2]
-        approx_node_dest, time_offset_dest, (x_approx_dest, y_approx_dest) = dest_offset
+        approx_node_dest, time_offset_dest, (x_approx_dest, y_approx_dest), dist_offset_dest, edge_id = dest_offset
 
         self.nodes[position] = clientId
         self.clients[clientId] = {'position': position, 'destination': destination,
@@ -263,6 +264,7 @@ class Graph:
         'time_offset_prev': time_offset_prev, 'approx_node_next': approx_node_next,
         'dist_offset_next': dist_offset_next, 'time_offset_next': time_offset_next,
         'approx_node_dest': approx_node_dest, 'time_offset_dest': time_offset_dest,
+        'dist_offset_dest': dist_offset_dest, "edge_id": edge_id,
         'approx_position_dest': (x_approx_dest, y_approx_dest), 'approx_position_orig': (x_approx_orig, y_approx_orig)}
 
         self.graph.add_node(
@@ -379,21 +381,20 @@ class Graph:
         Output: True if sucessful. False if edge is not found.
         Behavior: changes speed of specified edge
         """
-        try:
-            orig, dest = self.edges[edge_id]
-            distance = self.graph.edges[orig, dest]["distance"]
-            wheight_time = (int(distance)/int(speed))*3600
 
-            self.graph.edges[orig, dest]["speed"] = speed
-            self.Rgraph.edges[orig, dest]["speed"] = speed
-            self.graph.edges[orig, dest]["time"] = wheight_time
-            self.Rgraph.edges[orig, dest]["time"] = wheight_time
+        orig, dest = self.edges[edge_id]
+        distance = self.graph.edges[orig, dest]["distance"]
+        wheight_time = (int(distance)/int(speed))*3600
 
-        except KeyError:
-            return False
-        else:
-            self.__updateTitle(edge_id)
-            return True
+        print(orig, dest)
+
+        self.graph.edges[orig, dest]["speed"] = speed
+        self.Rgraph.edges[dest, orig]["speed"] = speed
+        self.graph.edges[orig, dest]["time"] = wheight_time
+        self.Rgraph.edges[dest, orig]["time"] = wheight_time
+
+        self.__updateTitle(edge_id)
+        return True
 
     def changeEdgeColor(self, edge_id : str, color : str = "#303030"):
         """
@@ -695,9 +696,9 @@ class Graph:
 
         # retorna o próprio vértice com offsets 0 caso o carro esteja em cima de um vértice
         if self.__distance(nodeObj2, position) == 0:
-            return (dest_edge[1], 0)
+            return (dest_edge[1], 0, dictionary["position"], 0, aux)
 
-        return (dest_edge[0], self.graph.edges[dest_edge[0], dest_edge[1]]["time"] * relative, dictionary["position"])
+        return (dest_edge[0], self.graph.edges[dest_edge[0], dest_edge[1]]["time"] * relative, dictionary["position"], self.graph.edges[dest_edge[0], dest_edge[1]]["distance"] * relative, aux)
 
     def roadApprox(self, position: Tuple[float, float]) -> Dict[Tuple[float, float], str]:
         """ finds nearest edge (or node) of a unconnected node
@@ -820,7 +821,7 @@ class Graph:
         if destination is None: return route_values
         return route_values, prev 
  
-    def __getAllCosts(self) -> Dict[str, float]:
+    def __getAllCosts(self, metric : str = "time") -> Dict[str, float]:
         """Recupera o valor de cada aresta
 
         Returns:
@@ -828,7 +829,7 @@ class Graph:
         """
         costs = {}
         for edge in self.graph.edges:
-            value = self.graph.edges[edge[0], edge[1]]['time']
+            value = self.graph.edges[edge[0], edge[1]][metric]
             costs[(edge[0], edge[1])] = value
         return costs
 
@@ -1064,34 +1065,44 @@ class Graph:
             total_path = car_client_path + route['path']
 
         
-        total_cost = car_client_cost + route['cost']
+        # total_cost = car_client_cost + route['cost']
 
-        self.updateMetric(car_client_cost, route['cost'], total_cost)
+        distances = self.__getAllCosts("distance")
+        pathCost = self.__getCostFromPath(total_path, distances)
+        total_distance = pathCost + self.cars[car_id]["dist_offset"] + self.clients[client_id]["dist_offset_dest"]
+
+        total_cost = (car_client_cost, route['cost'], total_distance)
 
         return total_cost, total_path
 
-    def updateMetric(self, wait_time : float, travel_time : float, total_time : float) -> None:
-        """Update das métricas "wait time" e "travel time"
-
-        Simplesmente coloque o tempo de espera total que o último cliente sofreu, assim como o tempo de viagem.
+    def updateMetric(self, metrics : List[float]) -> None:
+        """Update das métricas
 
         Args:
-            wait_time (float): novo wait time
-            travel_time (float): novo travel time
+            metrics (list[float]): array com os seguintes valores:
+                wait_time (float): tempo de espera da viagem
+                travel_time (float): tempo de viagem (tempo em que o cliente ficou no carro)
+                total_distance(float): distancia total que o carro percorreu
         """
-        self.waitTime += wait_time
-        self.travelTime += travel_time
-        self.totalTime += total_time
+        self.waitTime += metrics[0]
+        self.travelTime += metrics[1]
+        self.totalTime += metrics[0] + metrics[1]
+        self.totalDistance += metrics[2]
         self.numberOfTravels += 1
 
     def getMetrics(self) -> Tuple[float, float]:
         """Retorna uma tupla com as métricas
 
         Returns:
-            Tuple[float, float]: Média do wait time e média do travel time
+            Tuple[float, float, float, float]: Tempo médio de espera, tempo médio de viagem, distância média de viagem, tempo total de todos os clientes
         """
         if self.numberOfTravels == 0: return (0, 0)
-        return (self.waitTime / self.numberOfTravels, self.travelTime / self.numberOfTravels)
+        return (
+            self.waitTime / self.numberOfTravels,
+            self.travelTime / self.numberOfTravels,
+            self.totalDistance / self.numberOfTravels,
+            self.totalTime
+        )
 
     def valid_paths(self, paths : List[Dict[float, List[str]]], orig : str = '', dest : str = '') -> bool:
         """ Verifica se um caminho existe e não tem loops
@@ -1138,6 +1149,29 @@ class Graph:
                     print("Os " + number_of_paths + " caminhos de " + orig + " até " + dest + " são válidos")
                     
         print("\nTodos os caminhos encontrados são válidos")
+
+    def calcAndShow(self, carId : str, clientId : str, metrics : Tuple[float, float, float]):
+        """_summary_
+
+        Args:
+            carId (str): id do carro escolhido
+            clientId (str): id do cliente que fará a viagem
+            route (Dict[float, List[str]]): o caminho escolhido, algum índice da output da clientRoutes
+
+        Returns:
+            _type_: _description_
+        """
+        # pega caminho total e atualiza as metricas
+        # cost, path = self.getTotalPath(clientId, carId, route)
+        # self.resetColors()
+        # self.showGraphRoute(path, self.graph.nodes[carId]["orig"], self.clients[clientId]["approx_position_dest"], self.clients[clientId]["approx_position_orig"])
+
+        self.updateMetric(metrics)
+
+        self.removeCar(carId)
+        self.addCar(self.clients[clientId]["approx_position_dest"], self.clients[clientId]["edge_id"], carId)
+        self.removeClient(clientId)
+        # return cost
 
 if __name__ == "__main__":
     # fd = open("app/src/graphs/input5.txt", "r")
@@ -1210,7 +1244,7 @@ if __name__ == "__main__":
     print(path3)
     teste = g.getTotalPath(clienteEscolhido, carId3, routes)
     # print(teste)
-    # g.showGraphRoute(teste[1], g.graph.nodes[carId3]["orig"], g.clients[clienteEscolhido]["approx_position_dest"], g.clients[clienteEscolhido]["approx_position_orig"])
+    g.showGraphRoute(teste[1], g.graph.nodes[carId3]["orig"], g.clients[clienteEscolhido]["approx_position_dest"], g.clients[clienteEscolhido]["approx_position_orig"])
     # g.showGraph()
     g.showGraphRoute(path3, g.clients[clienteEscolhido]["approx_position_orig"], g.clients[clienteEscolhido]["approx_position_dest"])
     # g.showGraphRoute(route2, g.graph.nodes[carId3]["orig"], g.clients[clienteEscolhido]["approx_position_orig"])
