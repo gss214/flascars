@@ -1,5 +1,4 @@
 from operator import itemgetter
-from xxlimited import new
 import networkx as nx
 from pyvis import network as net
 import time
@@ -183,12 +182,30 @@ class Graph:
         Behavior: Creates new car as an unconnected node in the graph
         """
         carId = str(self.__genNewId())
-        car_title = "Car<br>"
-        car_title += f"ID = {carId}<br>"
-        car_title += f"Position = {position}"
 
         # print(carId)
         aprrox_node, dist_offset, time_offset = self.carToNode(position, edge_id)
+
+        node1_id, node2_id = self.edges[edge_id]
+        node1 = self.graph.nodes[node1_id]["orig"]
+        node2 = self.graph.nodes[node2_id]["orig"]
+        
+        intersection = self.__intersectionPoint(node1, node2, position)
+        dist_node_1 = self.__distance(intersection, node1)
+        dist_node_2 = self.__distance(intersection, node2)
+
+        if not math.isclose(dist_node_1 + dist_node_2, self.__distance(node1, node2)):
+            if dist_node_1 < dist_node_2:
+                position = node1
+            else:
+                position = node2
+
+        else:
+            position = intersection
+
+        car_title = "Car<br>"
+        car_title += f"ID = {carId}<br>"
+        car_title += f"Position = {position}"
 
         #self.cars[carId] = (position, edge_id, aprrox_node, dist_offset, time_offset)
         self.nodes[position] = carId
@@ -414,6 +431,9 @@ class Graph:
             self.graph.edges[orig, dest]["color"] = self.colorList[0]
             self.graph.edges[orig, dest]["width"] = 1
 
+    def __formatPosition(self, position : Tuple[float, float]) -> Tuple[str, str]:
+        return ('{:.2f}'.format(position[0]), '{:.2f}'.format(position[1]))
+
     def showGraphRoute(self, path : List, approx_orig : Tuple[float, float], approx_dest : Tuple[float, float], approx_interm : Tuple[float, float] = None):
         """Mostra o grafo
         Args:
@@ -436,7 +456,7 @@ class Graph:
                 graph_plot.add_node(
                     str(new_id), 
                     x=approx_orig[0]*self.zoomOut, y=approx_orig[1]*self.zoomOut, 
-                    title=f"Ponto de embarque do cliente<br>Posição: {approx_orig}",
+                    title=f"Ponto de embarque do cliente<br>Posição: {self.__formatPosition(approx_orig)}",
                     color="#32BA9F",
                     shape="image",
                     size=20,
@@ -445,7 +465,7 @@ class Graph:
                 graph_plot.add_node(
                     str(new_id2), 
                     x=approx_dest[0]*self.zoomOut, y=approx_dest[1]*self.zoomOut, 
-                    title=f"Ponto de desembarque do cliente<br>Posição: {approx_dest}",
+                    title=f"Ponto de desembarque do cliente<br>Posição: {self.__formatPosition(approx_dest)}",
                     color="#32BA9F",
                     shape="image",
                     size=20,
@@ -472,7 +492,7 @@ class Graph:
                 graph_plot.add_node(
                     str(new_id), 
                     x=approx_dest[0]*self.zoomOut, y=approx_dest[1]*self.zoomOut, 
-                    title=f"Ponto de embarque do cliente<br>Posição: {approx_dest}",
+                    title=f"Ponto de embarque do cliente<br>Posição: {self.__formatPosition(approx_dest)}",
                     color="#32BA9F",
                     shape="image",
                     size=20,
@@ -499,7 +519,7 @@ class Graph:
             graph_plot.add_node(
                 str(new_id), 
                 x=approx_interm[0]*self.zoomOut, y=approx_interm[1]*self.zoomOut, 
-                title=f"Ponto de embarque do cliente<br>Posição: {approx_interm}",
+                title=f"Ponto de embarque do cliente<br>Posição: {self.__formatPosition(approx_interm)}",
                 color="#32BA9F",
                 shape="image",
                 label=None,
@@ -509,7 +529,7 @@ class Graph:
             graph_plot.add_node(
                 str(new_id2), 
                 x=approx_dest[0]*self.zoomOut, y=approx_dest[1]*self.zoomOut, 
-                title=f"Ponto de desembarque do cliente<br>Posição: {approx_dest}",
+                title=f"Ponto de desembarque do cliente<br>Posição: {self.__formatPosition(approx_dest)}",
                 color="#32BA9F",
                 shape="image",
                 image=ICONS_PATH + "target.svg",
@@ -989,6 +1009,7 @@ if __name__ == "__main__":
     clientId2 = g.addClient((2, 4), (7, 3.5))
     carId = g.addCar((5.5, 3.5), "2")
     carId2 = g.addCar((8.5, 5), "4")
+    carId3 = g.addCar((2, 4), "11")
 
     routes = g.clientRoutes(clientId)
     route2 = g.getCarRoute(clientId, carId)[1]
@@ -1005,9 +1026,9 @@ if __name__ == "__main__":
     path3 = routes["path"]
     teste = g.getTotalPath(clientId2, carId, routes)
     print(teste)
-    # g.showGraphRoute(teste[1], g.graph.nodes[carId]["orig"], g.clients[clientId2]["approx_position_dest"], g.clients[clientId2]["approx_position_orig"])
+    g.showGraphRoute(teste[1], g.graph.nodes[carId]["orig"], g.clients[clientId2]["approx_position_dest"], g.clients[clientId2]["approx_position_orig"])
     # g.showGraphRoute(path3, g.clients[clientId2]["approx_position_orig"], g.clients[clientId2]["approx_position_dest"])
-    g.showGraphRoute(route2, g.graph.nodes[carId]["orig"], g.clients[clientId]["approx_position_orig"])
+    # g.showGraphRoute(route2, g.graph.nodes[carId]["orig"], g.clients[clientId]["approx_position_orig"])
     # routes = g.clientRoutes(clientId2)[0]
     # teste = g.getTotalPath(clientId2, carId2, routes)
     # g.showGraphRoute(teste[1], g.graph.nodes[carId2]["orig"], g.clients[clientId2]["approx_position_dest"], g.clients[clientId2]["approx_position_orig"])
