@@ -205,11 +205,12 @@ class Graph:
 
         car_title = "Car<br>"
         car_title += f"ID = {carId}<br>"
-        car_title += f"Position = {position}"
+        car_title += f"Position = {self.__formatPosition(position)}"
 
         #self.cars[carId] = (position, edge_id, aprrox_node, dist_offset, time_offset)
         self.nodes[position] = carId
-        self.cars[carId] = {'position': position , 'edge_id': edge_id , 'approx_node': aprrox_node , 'dist_offset': dist_offset , 'time_offset': time_offset}
+        self.cars[carId] = {'position': position , 'edge_id': edge_id , 'approx_node': aprrox_node , 
+        'dist_offset': dist_offset , 'time_offset': time_offset}
         # self.cars[carId] = {'position': position , 'edge_id': edge_id}
 
         self.graph.add_node(
@@ -449,8 +450,27 @@ class Graph:
         new_id2 = self.__genNewId()
 
         # todo checar se tem um no na posicao. se tiver, nao sobreescreve e salva o id dele
-
-        if approx_interm == None:
+        if path == []:
+            car_id = self.nodes[approx_orig]
+            path.append(car_id)
+            graph_plot.add_node(
+                str(new_id), 
+                x=approx_dest[0]*self.zoomOut, y=approx_dest[1]*self.zoomOut, 
+                title=f"Ponto de embarque do cliente<br>Posição: {self.__formatPosition(approx_dest)}",
+                color="#32BA9F",
+                shape="image",
+                size=20,
+                image=ICONS_PATH + "target_destination.svg"
+            )
+            path.append(new_id)
+            graph_plot.add_edge(
+                car_id,
+                str(new_id),
+                # title="qualquer coisa aqui",
+                color=color,
+                width=3,
+            )
+        elif approx_interm == None:
             # caso cliente ate destino
             if approx_orig not in self.nodes:
                 graph_plot.add_node(
@@ -557,6 +577,7 @@ class Graph:
         graph_plot.toggle_physics(False)
         graph_plot.toggle_drag_nodes(False)
         graph_plot.show('graph.html')
+        # graph_plot.save_graph('app/static/graph.html')
 
     def showGraph(self, reverse = False):
         """Mostra o grafo
@@ -574,6 +595,7 @@ class Graph:
 
         graph_plot.toggle_drag_nodes(False)
         graph_plot.show('graph.html')
+        # graph_plot.save_graph('app/static/graph.html')
 
     def __calcLineEquation(self, node1 : Tuple[float, float], node2 : Tuple[float, float]) -> Tuple[float, float, float] :
         """ calculates line coefficients given two points coordinates
@@ -882,16 +904,12 @@ class Graph:
         # A = k melhores caminhos
         return A    
 
-    def carRoutes(self, client : str, dist_offset : float, time_offset : float):
+    def carRoutes(self, client_id : str):
         """Determina a distância de um cliente para todos os carros livres
 
         Args:
             self (graph): o próprio grafo
-            client (string): origem da busca, é um inteiro como string. Ex: '2', '3' e representa o vértice para o qual o cliente foi aproximado.
-            
-            time_offset: tempo gasto do ponto na aresta para o qual o cliente foi aproximado até o vértice que será levado em conta no cálculo.
-
-            dist_offset (float): distância do ponto na aresta para o qual o cliente foi aproximado até o vértice que será levado em conta na busca pelo menor caminho.
+            client_id (string): id do cliente que solicitou uma viagem
 
         Return:
             ({string: float}, {string: float}): tupla de dicionários:
@@ -899,6 +917,7 @@ class Graph:
                 adjusted_times: tempo de viagem do carro até o cliente
         """
         # obtém a distância de um vértice a todos os outros no 
+        client = self.edges[client_id]['approx_node_prev']
         distances = self.dijkstra(client, metric="distance", reverse=True)
         times = self.dijkstra(client, metric="time", reverse=True)
         
@@ -907,15 +926,24 @@ class Graph:
 
         # itera por todos os carros
         for key in self.cars:
-            # soma a distância do vértice para o qual o carro foi aproximado com o offset de ajuste do carro e do cliente
-            # print("distancia do vertice que o carro foi aproximado", distances[self.cars[key]['approx_node']])
-            # print("offset da distancia do carro", self.cars[key]['dist_offset'])
-            # print("offset do cliente", dist_offset)
-            
-            adjusted_distances[key] = distances[self.cars[key]['approx_node']] + self.cars[key]['dist_offset'] + dist_offset
-            
-            # soma o tempo até o vértice para o qual o carro foi aproximado com o offset de ajuste
-            adjusted_times[key] = times[self.cars[key]['approx_node']] + self.cars[key]['time_offset'] + time_offset
+            # Distancia entre o carro e o cliente
+            # Dois casos possiveis:
+            # 1) Negativo -> O carro depois do cliente (usa o Dijkstra)
+            # 2) Nao Negativo -> O carro antes do cliente (A distancia ate o cliente)
+            betweenDistance = self.cars[key]['dist_offset'] - self.clients[key]['dist_offset_next']
+
+            if self.cars[key]['approx_node'] == self.clients[client_id]['approx_node_next'] and betweenDistance >= 0:
+                # distancia do carro ate o cliente
+                adjusted_distances[key] = betweenDistance
+
+                # tempo que o carro leva para ir ate o cliente
+                adjusted_times[key] = self.cars[key]['time_offset'] - self.clients[key]['time_offset_next']
+            else:
+                # soma a distância do vértice para o qual o carro foi aproximado com o offset de ajuste do carro e do cliente
+                adjusted_distances[key] = distances[self.cars[key]['approx_node']] + self.cars[key]['dist_offset'] + self.clients[client_id]['dist_offset_prev']
+                
+                # soma o tempo até o vértice para o qual o carro foi aproximado com o offset de ajuste
+                adjusted_times[key] = times[self.cars[key]['approx_node']] + self.cars[key]['time_offset'] + self.clients[client_id]['time_offset_prev']
 
         return adjusted_distances, adjusted_times
 
@@ -942,7 +970,7 @@ class Graph:
         return paths
 
     def getCarRoute(self, client_id : str, car_id : str) -> Tuple[float, List[str]]:
-        """ Calcula a distância de um determinado carro até um cliente
+        """ Calcula o trajeto mais rápido de um determinado carro até um cliente
 
         Args:
             client_id (str): id do cliente
@@ -954,8 +982,15 @@ class Graph:
 
         orig = self.cars[car_id]['approx_node']
         dest = self.clients[client_id]['approx_node_prev']
-        path, costs = self.getShortestPath(orig, dest)
-        cost = costs[dest] + self.cars[car_id]['time_offset'] + self.clients[client_id]['time_offset_prev']
+        
+        betweenTime = self.cars[car_id]['time_offset'] - self.clients[client_id]['time_offset_next']
+
+        if orig == self.clients[client_id]['approx_node_next'] and betweenTime >=0:
+            cost = betweenTime
+            path = []
+        else:
+            path, costs = self.getShortestPath(orig, dest)
+            cost = costs[dest] + self.cars[car_id]['time_offset'] + self.clients[client_id]['time_offset_prev']
 
         return cost, path
 
@@ -1007,12 +1042,15 @@ if __name__ == "__main__":
     g = Graph(fd)
     clientId = g.addClient((0, 0), (6, 6))
     clientId2 = g.addClient((2, 4), (7, 3.5))
+    # clientId2 = g.addClient((2, 4), (2, 4))
     carId = g.addCar((5.5, 3.5), "2")
     carId2 = g.addCar((8.5, 5), "4")
-    carId3 = g.addCar((2, 4), "11")
+    carId3 = g.addCar((2.5, 4), "11")
 
     routes = g.clientRoutes(clientId)
-    route2 = g.getCarRoute(clientId, carId)[1]
+    route2 = g.getCarRoute(clientId2, carId3)[1]
+
+    print(route2)
 
     # print("\n5 menores rotas:")
     for route in routes:
@@ -1024,11 +1062,11 @@ if __name__ == "__main__":
 
     routes = g.clientRoutes(clientId2)[0]
     path3 = routes["path"]
-    teste = g.getTotalPath(clientId2, carId, routes)
-    print(teste)
-    g.showGraphRoute(teste[1], g.graph.nodes[carId]["orig"], g.clients[clientId2]["approx_position_dest"], g.clients[clientId2]["approx_position_orig"])
+    # teste = g.getTotalPath(clientId2, carId3, routes)
+    # print(teste)
+    # g.showGraphRoute(teste[1], g.graph.nodes[carId3]["orig"], g.clients[clientId2]["approx_position_dest"], g.clients[clientId2]["approx_position_orig"])
     # g.showGraphRoute(path3, g.clients[clientId2]["approx_position_orig"], g.clients[clientId2]["approx_position_dest"])
-    # g.showGraphRoute(route2, g.graph.nodes[carId]["orig"], g.clients[clientId]["approx_position_orig"])
+    g.showGraphRoute(route2, g.graph.nodes[carId3]["orig"], g.clients[clientId2]["approx_position_orig"])
     # routes = g.clientRoutes(clientId2)[0]
     # teste = g.getTotalPath(clientId2, carId2, routes)
     # g.showGraphRoute(teste[1], g.graph.nodes[carId2]["orig"], g.clients[clientId2]["approx_position_dest"], g.clients[clientId2]["approx_position_orig"])
