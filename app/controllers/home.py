@@ -13,10 +13,12 @@ def hello_world():
     streets = list(g.edges.keys())
     cars = list(g.cars.keys())
     clients = list(g.clients.keys())
+    shortestPaths = None
 
     if request.method == 'GET':
         print('get')
     else:
+        print(request.form)
         if "client-form-submit" in request.form:
             data = from_form_to_client(request)
             retorno = g.addClient(data['position'], data['destination'])
@@ -27,11 +29,21 @@ def hello_world():
             g.showGraph()
         elif "id" in request.form:
             value = request.form.get('id')
-            dist,times = g.carRoutes(g.clients[value]["approx_node_prev"], g.clients[value]["dist_offset_prev"], g.clients[value]["time_offset_prev"])
+            shortestPaths = g.clientRoutes(value)
+            print(shortestPaths)
         elif "idCar" in request.form:
             carValue = int(request.form.get('idCar'))
         elif "select-path" in request.form:
             print(request.form.get('selectedPath'))
+            # TODO: Após escolher caminho, o usuário é deletado e o carro é realocado
+        elif "view-path" in request.form:
+            value = request.form.get('view-path').split('-')[0].strip()
+            shortestPaths = g.clientRoutes(value)
+            path = request.form.get('view-path').split('-')[1].strip()
+            path_array = list(path[1:-1].split(','))
+            path_array = [elem.strip()[1:-1] for elem in path_array]
+            g.resetColors()
+            g.showGraphRoute(path_array, g.clients[value]["approx_position_orig"], g.clients[value]["approx_position_dest"])
         else:
             data = from_form_to_velocity(request)
             retorno = g.changeSpeed(data['edge_id'], data['speed'])
@@ -47,7 +59,7 @@ def hello_world():
             value = clients[0]
         else:
             value = 0
-    return render_template('index.html', streets=streets, clients=clients, id_cliente=value, id_car=carValue, cars=cars, dist=dist, time=times, _tuple=[value, carValue])
+    return render_template('index.html', streets=streets, clients=clients, id_cliente=value, id_car=carValue, cars=cars, dist=dist, time=times, _tuple=[value, carValue], shortestPaths=shortestPaths)
 
 
 def from_form_to_client(request):

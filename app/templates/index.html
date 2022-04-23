@@ -296,24 +296,23 @@
       {% endif %}
       <a href="/delete/car/{{id_car}}" class="btn btn-danger" style="align-self: flex-start"><i class="fas fa-trash-alt"></i></a>
     </div>
+    {% if shortestPaths %}
     <div class="client-info p-4">
-      <form action="/" method="POST">
+      <form action="/" method="POST" style="align-self: flex-start">
         <h3>Melhores caminhos:</h3>
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="selectedPath" id="valuek" value="option1">
-          <label class="form-check-label" for="value1">Value 1</label>
+        {% for sp in shortestPaths %}
+        <div class="form-check" style="align-self: flex-start">
+          <div class="row">
+            <input class="form-check-input" type="radio" name="selectedPath" id="{{loop.index}}" value={{sp.cost}}>
+            <label class="form-check-label" for={{sp.cost}}>Duração {{(sp.cost//60)|int}} min {{(sp.cost%60)|int}} s</label>
+            <button action="/" type="submit" name="view-path" class="btn btn-primary btn-sm ml-2" value="{{id_cliente}} - {{sp.path}}">Visualizar caminho</button>
+          </div>
         </div>
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="selectedPath" id="value2" value="option2">
-          <label class="form-check-label" for="value2">Value 2</label>
-        </div>
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="selectedPath" id="value3" value="option3">
-          <label class="form-check-label" for="value3">Value 3</label>
-        </div>
+        {% endfor %}
         <input type="submit" value="Escolher caminho" name="select-path" class="btn btn-primary mt-2">
       </form>
     </div>
+    {% endif %}
   </div>
 
 
@@ -323,6 +322,7 @@
     <p class="mt-2 ml-3 mb-1">Site desenvolvido para a disciplina de PAA</p>
   </div>
 </body>
+
 <script>
   var click = false
   function send() {
