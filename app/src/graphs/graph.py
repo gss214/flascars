@@ -244,7 +244,7 @@ class Graph:
         Behavior: Creates new client as an unconnected node in the graph
         """
         clientId = str(self.__genNewId())
-        edge_title = "Client<br>"
+        edge_title = "Cliente<br>"
         edge_title += f"ID = {clientId}<br>"
         edge_title += f"Origem = {position}<br>"
         edge_title += f"Destino = {destination}"
@@ -582,6 +582,7 @@ class Graph:
 
         graph_plot.toggle_physics(False)
         graph_plot.toggle_drag_nodes(False)
+        
         # graph_plot.show('graph.html')
         graph_plot.save_graph('app/static/graph.html')
 
@@ -600,6 +601,7 @@ class Graph:
         graph_plot.toggle_physics(False)
 
         graph_plot.toggle_drag_nodes(False)
+        
         # graph_plot.show('graph.html')
         graph_plot.save_graph('app/static/graph.html')
 

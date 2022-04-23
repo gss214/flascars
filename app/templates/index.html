@@ -164,7 +164,7 @@
                         {% endfor %}
                       </select>
                       <input name="speed" class="form-control" placeholder="Insira a nova velcidade da rua"
-                        aria-label="velocity_entry" type="number" step="0.01" min="0.01">
+                        aria-label="velocity_entry" type="number" step="1" min="1">
                       <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                         <button type="submit" id="velocity-form-submit" name="velocity-form-submit"
@@ -176,7 +176,7 @@
                       enctype=multipart/form-data>
                       <div class="mt-5">
                         <div class="mb-3">
-                          <label for="formFile" class="form-label">Ou faça um upload de um
+                          <label for="formFile" class="form-label" style="color: black">Ou faça um upload de um
                             arquivo!</label>
                           <input class="form-control" type="file" id="formFile">
                         </div>
@@ -200,23 +200,15 @@
 
   <div class="container-fluid mt-3">
     <div class="row g-0">
-      <div class="col-3" style="display: flex; justify-content: center;">
+      <div class="col-4" style="display: flex; justify-content: center;">
         <div class="card" style="width: 20vw;">
           <div class="card-body" style="display: flex;flex-flow: column;align-items: center;">
-            <h5 class="card-title">Taxa de carros por cliente</h5>
-            <h6 class="card-subtitle mb-2 text-muted">3 carros/cliente</h6>
-          </div>
-        </div>
-      </div>
-      <div class="col-3" style="display: flex; justify-content: center;">
-        <div class="card" style="width: 20vw;">
-          <div class="card-body" style="display: flex;flex-flow: column;align-items: center;">
-            <h5 class="card-title">Tempo médio de espera dos clientes</h5>
+            <h5 class="card-title text-center" >Tempo médio de espera dos clientes</h5>
             <h6 class="card-subtitle mb-2 text-muted" style="align-self: center;">5 minutos</h6>
           </div>
         </div>
       </div>
-      <div class="col-3" style="display: flex; justify-content: center;">
+      <div class="col-4" style="display: flex; justify-content: center;">
         <div class="card" style="width: 20vw;">
           <div class="card-body" style="display: flex;flex-flow: column;align-items: center;">
             <h5 class="card-title">Tempo médio de viagem</h5>
@@ -224,10 +216,10 @@
           </div>
         </div>
       </div>
-      <div class="col-3" style="display: flex; justify-content: center;">
+      <div class="col-4" style="display: flex; justify-content: center;">
         <div class="card" style="width: 20vw;">
           <div class="card-body" style="display: flex;flex-flow: column;align-items: center;">
-            <h5 class="card-title">Distância média percorrida</h5>
+            <h5 class="card-title text-center">Distância média percorrida</h5>
             <h6 class="card-subtitle mb-2 text-muted">5 km</h6>
           </div>
         </div>
@@ -238,41 +230,47 @@
   <div class="graph-container mt-5">
     <div class="graph">
       <iframe src="{{ url_for('static', filename='graph.html') }}"
-        style="width: 100%; height: 100%; border-radius: 10px 10px 0 0; border: 1px;" title="graph"></iframe>
+        style="width: 100%; height: 100%; border-radius: 10px 10px 0 0; border: 1px;" scrolling="no" title="graph"></iframe>
     </div>
   </div>
-
-  <div class="client-info-container mb-5">
+  <div class="client-info-container mb-5 mt-5">
     <div class="client-info p-4">
       <div class="dropdown" style="align-self: flex-start">
         <form action="/" method="POST" name="id">
-          <select id="client-id" onclick="send()" class="form-control form-control-lg primary round-btn" name="id">
-            {% for client in clients %}
-            {%if client == id_cliente %}
-            <option selected="selected" value={{client}}>{{client}}</option>
-            {% else %}
-            <option value={{client}}>{{client}}</option>
-            {% endif %}
-            {% endfor %}
-          </select>
+          <h6>Id Cliente</h6>          
+          <div class="input-group mt-3 mb-3">
+            <select id="client-id" class="form-control form-control-lg primary round-btn" name="id">
+                {% for client in clients %}
+                {% if client == id_cliente %}
+                <option selected="selected" value={{client}}>{{client}}</option>
+                {% else %}
+                <option value={{client}}>{{client}}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+            <input type="submit" value="Selecionar" class="btn btn-primary">
+            <a href="/delete/client/{{id_cliente}}" class="btn btn-danger" style="align-self: flex-start"><i class="fas fa-trash-alt"></i></a>
+          </div>
         </form>
       </div>
+      
       <div class="cliente-choices">
-        <!-- {% for data in clients[id_cliente] %}
+        {% if time %}
         <div class="my-2" style="display: flex; flex-direction: collum; justify-content: center;">
           <div class="line p-3 info-btn" style="border-radius: 5px; border: 1px solid #BEBEBE; align-items: center;">
-            <button type="button" class="btn btn-secondary mr-2" style="border-radius: 50px">{{loop.index}}</button>
             <div class="info-label ml-2 px-3">
-              <p class="mr-5 ml- mb-0">Tempo estimado da rota: {{data.cost}} minutos</p>
-              <p class="mb-0 mr-4">Distância total da rota: {{data.distance}} km</p>
+              {% for client in clients %}
+              {% if client == id_cliente %}
+                <p class="mr-5 ml- mb-0">Localização atual: {{client[id_cliente].position}}</p>
+                <p class="mb-0 mr-4">Destino: {{client[id_cliente].destination}}</p>
+              {% endif %}
+              {% endfor %}
             </div>
           </div>
         </div>
-        {% endfor %} -->
+        {% endif %}
       </div>
-      <a href="/delete/client/{{id_cliente}}" class="btn btn-danger" style="align-self: flex-start"><i class="fas fa-trash-alt"></i></a>
-    </div>
-    <div class="client-info p-4" style="justify-content: space-between;">
+      
       <div class="dropdown" style="align-self: flex-start">
         <form action="/" method="POST" name="idCar">
           <select id="idCar" onclick="sendCar()" class="form-control primary round-btn" name="idCar" style="background-color: #28A745 !important;">
@@ -286,7 +284,8 @@
           </select>
         </form>
       </div>
-      <div onclick="console.log('oi')" class="my-2" style="display: flex; flex-direction: collum; justify-content: center;">
+      {% if time %}
+      <div onclick="selectRoute({{_tuple}})" class="my-2" style="display: flex; flex-direction: collum; justify-content: center;">
         <div class="line p-3 info-btn" style="border-radius: 5px; border: 1px solid #BEBEBE; align-items: center;">
           <div class="info-label ml-2 px-3">
             <p class="mr-5 ml- mb-0">Tempo de espera: {{(time[id_car]//60)|int}} min {{(time[id_car]%60)|int}} s</p>
@@ -294,8 +293,26 @@
           </div>
         </div>
       </div>
+      {% endif %}
       <a href="/delete/car/{{id_car}}" class="btn btn-danger" style="align-self: flex-start"><i class="fas fa-trash-alt"></i></a>
     </div>
+    {% if shortestPaths %}
+    <div class="client-info p-4">
+      <form action="/" method="POST" style="align-self: flex-start">
+        <h3>Melhores caminhos:</h3>
+        {% for sp in shortestPaths %}
+        <div class="form-check" style="align-self: flex-start">
+          <div class="row">
+            <input class="form-check-input" type="radio" name="selectedPath" id="{{loop.index}}" value={{sp.cost}}>
+            <label class="form-check-label" for={{sp.cost}}>Duração {{(sp.cost//60)|int}} min {{(sp.cost%60)|int}} s</label>
+            <button action="/" type="submit" name="view-path" class="btn btn-primary btn-sm ml-2" value="{{id_cliente}} - {{sp.path}}">Visualizar caminho</button>
+          </div>
+        </div>
+        {% endfor %}
+        <input type="submit" value="Escolher caminho" name="select-path" class="btn btn-primary mt-2">
+      </form>
+    </div>
+    {% endif %}
   </div>
 
 
@@ -305,6 +322,7 @@
     <p class="mt-2 ml-3 mb-1">Site desenvolvido para a disciplina de PAA</p>
   </div>
 </body>
+
 <script>
   var click = false
   function send() {
@@ -320,8 +338,11 @@
     }
     clickCar = true
   }
-  function selectRoute(id_cliente, id_car) {
-    document.location.href = '/selectRoute/'+id_cliente+'/'+ id_car
+  function selectRoute(_tuple) {
+      const id_cliente = parseInt(_tuple[0])
+      const id_car = parseInt(_tuple[1])
+      console.log(id_car, id_cliente)
+      window.location.href = '/selectRoute/'+id_cliente+'/'+ id_car
   }
 </script>
 
