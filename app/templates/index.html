@@ -246,33 +246,41 @@
     <div class="client-info p-4">
       <div class="dropdown" style="align-self: flex-start">
         <form action="/" method="POST" name="id">
-          <select id="client-id" onclick="send()" class="form-control form-control-lg primary round-btn" name="id">
-            {% for client in clients %}
-            {%if client == id_cliente %}
-            <option selected="selected" value={{client}}>{{client}}</option>
-            {% else %}
-            <option value={{client}}>{{client}}</option>
-            {% endif %}
-            {% endfor %}
-          </select>
+          <div>
+            <h6>Id Cliente</h6>
+            <select id="client-id" class="form-control form-control-lg primary round-btn" name="id"
+              {% for client in clients %}
+              {% if client == id_cliente %}
+              <option selected="selected" value={{client}}>{{client}}</option>
+              {% else %}
+              <option value={{client}}>{{client}}</option>
+              {% endif %}
+              {% endfor %}
+            </select>
+            <a href="/delete/client/{{id_cliente}}" class="btn btn-danger" style="align-self: flex-start"><i class="fas fa-trash-alt"></i></a>
+            <input type="submit" value="Selecionar" class="btn btn-primary mt-2 mb-2">
+          </div>
         </form>
       </div>
+      
       <div class="cliente-choices">
-        <!-- {% for data in clients[id_cliente] %}
+        {% if time %}
         <div class="my-2" style="display: flex; flex-direction: collum; justify-content: center;">
           <div class="line p-3 info-btn" style="border-radius: 5px; border: 1px solid #BEBEBE; align-items: center;">
-            <button type="button" class="btn btn-secondary mr-2" style="border-radius: 50px">{{loop.index}}</button>
             <div class="info-label ml-2 px-3">
-              <p class="mr-5 ml- mb-0">Tempo estimado da rota: {{data.cost}} minutos</p>
-              <p class="mb-0 mr-4">Distância total da rota: {{data.distance}} km</p>
+              {% for client in clients %}
+              {% if client == id_cliente %}
+                <p class="mr-5 ml- mb-0">Localização atual: {{client.position}}</p>
+                <p class="mb-0 mr-4">Destino: {{client.destination}}</p>
+              {% endif %}
+              {% endfor %}
             </div>
           </div>
         </div>
-        {% endfor %} -->
+        {% endif %}
       </div>
-      <a href="/delete/client/{{id_cliente}}" class="btn btn-danger" style="align-self: flex-start"><i class="fas fa-trash-alt"></i></a>
-    </div>
-    <div class="client-info p-4" style="justify-content: space-between;">
+    <!-- </div>
+    <div class="client-info p-4" style="justify-content: space-between;"> -->
       <div class="dropdown" style="align-self: flex-start">
         <form action="/" method="POST" name="idCar">
           <select id="idCar" onclick="sendCar()" class="form-control primary round-btn" name="idCar" style="background-color: #28A745 !important;">
@@ -286,7 +294,8 @@
           </select>
         </form>
       </div>
-      <div onclick="selectRoute(id_cliente, id_car)" class="my-2" style="display: flex; flex-direction: collum; justify-content: center;">
+      {% if time %}
+      <div onclick="selectRoute({{_tuple}})" class="my-2" style="display: flex; flex-direction: collum; justify-content: center;">
         <div class="line p-3 info-btn" style="border-radius: 5px; border: 1px solid #BEBEBE; align-items: center;">
           <div class="info-label ml-2 px-3">
             <p class="mr-5 ml- mb-0">Tempo de espera: {{(time[id_car]//60)|int}} min {{(time[id_car]%60)|int}} s</p>
@@ -294,7 +303,11 @@
           </div>
         </div>
       </div>
+      {% endif %}
       <a href="/delete/car/{{id_car}}" class="btn btn-danger" style="align-self: flex-start"><i class="fas fa-trash-alt"></i></a>
+    </div>
+    <div class="client-info p-4">
+      
     </div>
   </div>
 
@@ -320,8 +333,11 @@
     }
     clickCar = true
   }
-  function selectRoute(id_cliente, id_car) {
-    document.location.href = '/selectRoute/'+id_cliente+'/'+ id_car
+  function selectRoute(_tuple) {
+      const id_cliente = parseInt(_tuple[0])
+      const id_car = parseInt(_tuple[1])
+      console.log(id_car, id_cliente)
+      window.location.href = '/selectRoute/'+id_cliente+'/'+ id_car
   }
 </script>
 

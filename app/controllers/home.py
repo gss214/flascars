@@ -4,10 +4,12 @@ from werkzeug.utils import secure_filename
 from app.src.graphs.graph import Graph
 
 g = Graph(open('app/files/paa_arquivo.txt'))
+g.showGraph()
 @app.route("/", methods=['GET', 'POST'])
 def hello_world():
     dist = None
     times = None
+    value = None
     streets = list(g.edges.keys())
     cars = list(g.cars.keys())
     clients = list(g.clients.keys())
@@ -18,9 +20,11 @@ def hello_world():
         if "client-form-submit" in request.form:
             data = from_form_to_client(request)
             retorno = g.addClient(data['position'], data['destination'])
+            g.showGraph()
         elif "car-form-submit" in request.form:
             data = from_form_to_car(request)
             retorno = g.addCar(data['position'], data['edge_id'])
+            g.showGraph()
         elif "id" in request.form:
             value = request.form.get('id')
             dist,times = g.carRoutes(g.clients[value]["approx_node_prev"], g.clients[value]["dist_offset_prev"], g.clients[value]["time_offset_prev"])
@@ -29,7 +33,6 @@ def hello_world():
         else:
             data = from_form_to_velocity(request)
             retorno = g.changeSpeed(data['edge_id'], data['speed'])
-    g.showGraph()
     streets = list(g.edges.keys())
     cars = list(g.cars.keys())
     clients = list(g.clients.keys())
@@ -37,11 +40,12 @@ def hello_world():
         carValue = cars[0]
     else:
         carValue = 0
-    if clients !=[]:
-        value = clients[0]
-    else :
-        value = 0
-    return render_template('index.html', streets=streets, clients=clients, id_cliente=value, id_car=carValue, cars=cars, dist=dist, time=times)
+    if not value:
+        if clients !=[]:
+            value = clients[0]
+        else:
+            value = 0
+    return render_template('index.html', streets=streets, clients=clients, id_cliente=value, id_car=carValue, cars=cars, dist=dist, time=times, _tuple=[value, carValue])
 
 
 def from_form_to_client(request):
@@ -55,7 +59,6 @@ def from_form_to_car(request):
     edge_id = request.form.get("edge-id")
     car_x = request.form.get("car-x")
     car_y = request.form.get("car-y")
-    
     return {"position": (float(car_x), float(car_y)),
             "edge_id": edge_id}
 
@@ -115,14 +118,16 @@ def upload_speed_list():
 @app.route("/delete/client/<id>", methods=['GET', 'POST'])
 def delete_client(id):
     g.removeClient(id)
+    g.showGraph()
     return redirect('/')
 @app.route("/delete/car/<id>", methods=['GET', 'POST'])
 def delete_car(id):
     g.removeCar(id)
+    g.showGraph()
     return redirect('/')
 
 @app.route("/selectRoute/<id_client>/<id_car>", methods=['GET', 'POST'])
 def select_route(id_client,id_car):
     _ ,rotas = g.getCarRoute(id_client,id_car)
-    g.showGraphRoute(rotas,g.graph.nodes[id_car]["orig"], g.clients[id_client]["approx_position_dest"], g.clients[id_client]["approx_position_orig"])
+    g.showGraphRoute(rotas,g.graph.nodes[id_car]["orig"], g.clients[id_client]["approx_position_orig"])
     return redirect('/')
