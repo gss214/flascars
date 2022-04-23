@@ -1,5 +1,5 @@
 from operator import itemgetter
-from xmlrpc.client import Boolean
+# from xmlrpc.client import Boolean
 import networkx as nx
 from pyvis import network as net
 import time
@@ -474,7 +474,7 @@ class Graph:
 
         if approx_interm == None:
             # caso cliente ate destino
-            if approx_orig not in self.nodes:
+            if approx_orig not in self.nodes or self.nodes[approx_orig] not in self.cars.keys():
                 graph_plot.add_node(
                     str(new_id), 
                     x=approx_orig[0]*self.zoomOut, y=approx_orig[1]*self.zoomOut, 
@@ -752,15 +752,15 @@ class Graph:
 
         if distance[destination] < float('inf'):
             path.insert(0, destination)
-            current = prev[destination]
-            
-            if current != origin:
+
+            if destination != origin:
+                current = prev[destination]
+
                 while current != origin:
                     path.insert(0, current)
                     current = prev[current]
 
                 path.insert(0, current)
-        
         return path, distance
 
     def dijkstra(self, origin : str, destination : str = None, metric: str = "time", reverse = False):
@@ -1011,14 +1011,17 @@ class Graph:
         betweenTime = self.clients[client]['time_offset_dest'] - self.clients[client]['time_offset_prev']
 
         if dest == self.clients[client]['approx_node_prev'] and betweenTime >= 0:
+            print("if1")
             paths = [{'path': [], 'cost': betweenTime}]
         else:
+            print("if2")
             paths = self.yenkShortestPaths(orig, dest)
 
             # adicona os offsets de tempo
             for path in paths:
                 path['cost'] += self.clients[client]['time_offset_dest'] + self.clients[client]['time_offset_next']
 
+        print(paths)
         return paths
 
     def getCarRoute(self, client_id : str, car_id : str) -> Tuple[float, List[str]]:
@@ -1090,7 +1093,7 @@ class Graph:
         if self.numberOfTravels == 0: return (0, 0)
         return (self.waitTime / self.numberOfTravels, self.travelTime / self.numberOfTravels)
 
-    def valid_paths(self, paths : List[Dict[float, List[str]]], orig : str = '', dest : str = '') -> Boolean:
+    def valid_paths(self, paths : List[Dict[float, List[str]]], orig : str = '', dest : str = '') -> bool:
         """ Verifica se um caminho existe e não tem loops
 
         Args:
