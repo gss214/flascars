@@ -30,6 +30,8 @@ def hello_world():
             dist,times = g.carRoutes(g.clients[value]["approx_node_prev"], g.clients[value]["dist_offset_prev"], g.clients[value]["time_offset_prev"])
         elif "idCar" in request.form:
             carValue = int(request.form.get('idCar'))
+        elif "select-path" in request.form:
+            print(request.form.get('selectedPath'))
         else:
             data = from_form_to_velocity(request)
             retorno = g.changeSpeed(data['edge_id'], data['speed'])
