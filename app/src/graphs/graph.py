@@ -810,9 +810,24 @@ class Graph:
         
         if reverse: return route_values
         if destination is None: return route_values
-        return route_values, prev  
+        return route_values, prev 
 
-    def yenkShortestPaths(self, origin : str, destination : str, k=5) -> List[Dict]:
+    # Recupera o valor de cada aresta
+    def __getAllCosts(self):
+        costs = {}
+        for edge in self.graph.edges:
+            value = self.graph.edges[edge[0], edge[1]]['time']
+            costs[(edge[0], edge[1])] = value
+        return costs
+
+    # Calcula o custo de um caminho
+    def __getCostFromPath(self, path, weights):
+        cost = 0
+        for i in range(0, len(path)-1):
+            cost += weights[(path[i], path[i+1])]
+        return cost
+
+    def yenkShortestPaths(self, origin : str, destination : str, k=15) -> List[Dict]:
         """
             Entrada:
                 self: próprio grafo
@@ -822,7 +837,9 @@ class Graph:
             Saída:
                 Lista de dicionários, cujas chaves são 'cost' (custo do caminho) e 'path' (caminho) 
         """
-        
+        # Backup dos pesos das arestas
+        weights = self.__getAllCosts()
+
         # obtém o menor caminho da origem ao destino, além das listas das distâncias a cada vértice
         path, distance = self.getShortestPath(origin, destination)
 
@@ -856,7 +873,14 @@ class Graph:
                     
                     # se o tamanho do caminho atual for maior que j
                     # e o caminho para análise for igual ao caminho atual (até o vértice de refinamento -- incluso)
-                    if len(current_path) > j and path_root == current_path[:j+1]:
+                    if len(current_path) - 1 > j and path_root == current_path[:j+1]:
+
+                        # Remove todas as arestas que vao para os nos na raiz
+                        for edge in self.graph.edges:
+                            if edge[1] == current_path[j]:
+                                weight = self.graph.edges[edge[0], edge[1]]['time']
+                                removed_edges.append((edge[0], edge[1], weight))
+                                self.graph.edges[edge[0], edge[1]]['time'] = float('inf')
                         
                         # backup do peso da aresta
                         weight = self.graph.edges[current_path[j], current_path[j+1]]['time']
@@ -879,11 +903,12 @@ class Graph:
                     path_total = path_root[:-1] + path_spur
 
                     # atualiza o vetor de distâncias de acordo com o novo caminho
-                    dist_total = distance[spur_node] + distance_spur[destination]
+                    dist_total = self.__getCostFromPath(path_root, weights) + distance_spur[destination]
 
                     # adiciona este caminho a lista de caminhos em potencial
                     potential_path = {'cost': dist_total, 'path':path_total}
-                    if potential_path not in B:
+                    # Verifica se o caminho ja nao esta em B
+                    if not potential_path in B:
                         B.append(potential_path)
 
                 # volta os pesos para as arestas 
@@ -1053,10 +1078,10 @@ if __name__ == "__main__":
     carId2 = g.addCar((8.5, 5), "4")
     carId3 = g.addCar((2.5, 4), "11")
 
-    routes = g.clientRoutes(clientId)
-    route2 = g.getCarRoute(clientId2, carId3)[1]
+    # routes = g.clientRoutes(clientId)
+    # route2 = g.getCarRoute(clientId2, carId3)[1]
 
-    print(route2)
+    # print(route2)
 
     # print("\n5 menores rotas:")
     # for route in routes:
@@ -1066,13 +1091,15 @@ if __name__ == "__main__":
     #path = g.getCarRoute(clientId, carId)
     #path2 = g.getCarRoute(clientId2, carId2)[1]
 
-    routes = g.clientRoutes(clientId2)[0]
-    path3 = routes["path"]
-    teste = g.getTotalPath(clientId2, carId3, routes)
-    print(teste)
+    print(g.yenkShortestPaths('6', '11'))
+
+    # routes = g.clientRoutes(clientId2)[0]
+    # path3 = routes["path"]
+    # teste = g.getTotalPath(clientId2, carId3, routes)
+    # print(teste)
     # g.showGraphRoute(teste[1], g.graph.nodes[carId3]["orig"], g.clients[clientId2]["approx_position_dest"], g.clients[clientId2]["approx_position_orig"])
     # g.showGraphRoute(path3, g.clients[clientId2]["approx_position_orig"], g.clients[clientId2]["approx_position_dest"])
-    g.showGraphRoute(route2, g.graph.nodes[carId3]["orig"], g.clients[clientId2]["approx_position_orig"])
+    # g.showGraphRoute(route2, g.graph.nodes[carId3]["orig"], g.clients[clientId2]["approx_position_orig"])
     # routes = g.clientRoutes(clientId2)[0]
     # teste = g.getTotalPath(clientId2, carId2, routes)
     # g.showGraphRoute(teste[1], g.graph.nodes[carId2]["orig"], g.clients[clientId2]["approx_position_dest"], g.clients[clientId2]["approx_position_orig"])
