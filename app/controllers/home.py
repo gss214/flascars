@@ -26,7 +26,11 @@ def hello_world():
         elif "car-form-submit" in request.form:
             data = from_form_to_car(request)
             retorno = g.addCar(data['position'], data['edge_id'])
+            print(data)
             g.showGraph()
+        elif "speed-form-submit" in request.form:
+            data = from_form_to_speed(request)
+            g.changeSpeed(data['edge_id'], data['speed'])
         elif "id" in request.form:
             value = request.form.get('id')
             shortestPaths = g.clientRoutes(value)
@@ -45,9 +49,7 @@ def hello_world():
             path_array = [elem.strip()[1:-1] for elem in path_array]
             g.resetColors()
             g.showGraphRoute(path_array, g.clients[value]["approx_position_orig"], g.clients[value]["approx_position_dest"])
-        else:
-            data = from_form_to_velocity(request)
-            retorno = g.changeSpeed(data['edge_id'], data['speed'])
+            
     streets = list(g.edges.keys())
     cars = list(g.cars.keys())
     clients = list(g.clients.keys())
@@ -60,6 +62,7 @@ def hello_world():
             value = clients[0]
         else:
             value = 0
+    print(clients)
     return render_template('index.html', streets=streets, clients=clients, id_cliente=value, id_car=carValue, cars=cars, dist=dist, time=times, _tuple=[value, carValue], shortestPaths=shortestPaths)
 
 
@@ -78,13 +81,13 @@ def from_form_to_car(request):
             "edge_id": edge_id}
 
 
-def from_form_to_velocity(request):
-    street = request.form.get('street-id-velocity')
+def from_form_to_speed(request):
+    street = request.form.get('street-id-speed')
     speed = float(request.form.get("speed"))
     return {"edge_id": street, "speed": speed}
 
 
-@app.route("/upload_client", methods=['GET', 'POST'])
+@app.route("/upload_client", methods=['GET','POST'])
 def upload_client_list():
     if request.method == 'POST':
         if 'file-client' not in request.files:
@@ -94,9 +97,10 @@ def upload_client_list():
         file.readline()
         for line in file:
             values = line.split()
-            client = {  "position": (float(values[1]), float(values[2])), 
-                        "destination": (float(values[3]), float(values[4]))}
-            g.addClient(client)
+            position = (float(values[1]), float(values[2]))
+            destination = (float(values[3]), float(values[4]))
+            g.addClient(position, destination)
+        g.showGraph()
     return redirect('/')
 
 @app.route("/upload_car", methods=['GET', 'POST'])
@@ -109,10 +113,11 @@ def upload_car_list():
         file.readline()
         for line in file:
             values = line.split()
-            car = {  "position": (float(values[1]), float(values[2])), 
-                     "edge_id ": values[3]}
-            print(car)
-            g.addCar(car)
+            position = (float(values[1]), float(values[2]))
+            edge_id = values[3].decode('utf-8')
+            print(values)
+            g.addCar(position, edge_id)
+        g.showGraph()
     return redirect('/')
 
 
@@ -126,8 +131,10 @@ def upload_speed_list():
         file.readline()
         for line in file:
             values = line.split()
-            speed = {"edge_id": values[0], "speed": float(values[1])}
-            g.changeSpeed(speed)
+            edge_id = values[0].decode('utf-8')
+            speed = float(values[1])
+            g.changeSpeed(edge_id,speed)
+        g.showGraph()
     return redirect('/')
 
 @app.route("/delete/client/<id>", methods=['GET', 'POST'])
