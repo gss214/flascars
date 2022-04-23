@@ -18,7 +18,7 @@ def hello_world():
     if request.method == 'GET':
         print('get')
     else:
-        print(request.form)
+        # print(request.form)
         if "client-form-submit" in request.form:
             data = from_form_to_client(request)
             retorno = g.addClient(data['position'], data['destination'])
@@ -30,6 +30,7 @@ def hello_world():
         elif "id" in request.form:
             value = request.form.get('id')
             shortestPaths = g.clientRoutes(value)
+            print('shortest path: ')
             print(shortestPaths)
         elif "idCar" in request.form:
             carValue = int(request.form.get('idCar'))

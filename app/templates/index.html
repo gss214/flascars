@@ -236,20 +236,29 @@
   <div class="client-info-container mb-5 mt-5">
     <div class="client-info p-4">
       <div class="dropdown" style="align-self: flex-start">
-        <form action="/" method="POST" name="id">
-          <h6>Id Cliente</h6>          
-          <div class="input-group mt-3 mb-3">
+        <form action="/" method="POST" name="id">        
+          <div class="input-group mt-3 mb-3" style="align-items: center;">
             <select id="client-id" class="form-control form-control-lg primary round-btn" name="id">
                 {% for client in clients %}
                 {% if client == id_cliente %}
-                <option selected="selected" value={{client}}>{{client}}</option>
+                <option selected="selected" value={{client}}><span><i class="fas fa-user mr-2"></i><p>{{client}}</p></span></option>
                 {% else %}
-                <option value={{client}}>{{client}}</option>
+                <option value={{client}}><span><i class="fas fa-user mr-2"></i><p>{{client}}</p></span></option>
                 {% endif %}
                 {% endfor %}
             </select>
-            <input type="submit" value="Selecionar" class="btn btn-primary">
-            <a href="/delete/client/{{id_cliente}}" class="btn btn-danger" style="align-self: flex-start"><i class="fas fa-trash-alt"></i></a>
+            
+            {% if clients == []%}
+            <div class="disabled btn btn-primary mx-3" style="max-height: 38px;">
+              <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <div class="disabled btn btn-danger"><i class="fas fa-trash-alt"></i></div>
+            {%else%}
+            <button type="submit" class="btn btn-primary mx-3" style="max-height: 38px;">
+              <i class="fas fa-map-marked-alt"></i>
+            </button>
+            <a href="/delete/client/{{id_cliente}}" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
+            {% endif %}
           </div>
         </form>
       </div>
@@ -269,19 +278,49 @@
           </div>
         </div>
         {% endif %}
+        {% if shortestPaths %}
+        <div class="client-info p-4">
+          <form action="/" method="POST" style="align-self: flex-start">
+            <h3 class="mb-3">Melhores caminhos:</h3>
+            {% for sp in shortestPaths %}
+            <div class="form-check" style="align-self: flex-start">
+              <div class="row mb-2" style="justify-content: space-between; ">
+                <input class="form-check-input mb-2" style="align-self: center;" type="radio" name="selectedPath" id="{{loop.index}}" value={{sp.cost}}>
+                <label class="form-check-label" style="align-self: center;" for={{sp.cost}}>Duração {{(sp.cost//60)|int}} min {{(sp.cost%60)|int}} s</label>
+                <button action="/" type="submit" name="view-path" class="btn btn-primary btn-sm ml-2" value="{{id_cliente}} - {{sp.path}}"><i class="fas fa-eye"></i></button>
+              </div>
+            </div>
+            {% endfor %}
+            <input type="submit" value="Escolher caminho" name="select-path" class="btn btn-primary mt-4">
+          </form>
+        </div>
+        {% endif %}
       </div>
       
       <div class="dropdown" style="align-self: flex-start">
-        <form action="/" method="POST" name="idCar">
-          <select id="idCar" onclick="sendCar()" class="form-control primary round-btn" name="idCar" style="background-color: #28A745 !important;">
-            {% for car in cars %}
-            {%if car == id_car %}
-            <option selected="selected" value={{car}}>{{car}}</option>
-            {% else %}
-            <option value={{car}}>{{car}}</option>
+        <form action="/" method="POST" name="id">        
+          <div class="input-group mt-3 mb-3" style="align-items: center;">
+            <select id="idCar" class="form-control form-control-lg primary round-btn" name="idCar" style="background-color: #28A745 !important;">
+                {% for car in cars %}
+                {% if car == id_car %}
+                <option selected="selected" value={{car}}><span><i class="fas fa-user mr-2"></i><p>{{car}}</p></span></option>
+                {% else %}
+                <option value={{car}}><span><i class="fas fa-user mr-2"></i><p>{{car}}</p></span></option>
+                {% endif %}
+                {% endfor %}
+            </select>
+            {% if cars == []%}
+            <div class="disabled btn btn-primary mx-3" style="max-height: 38px;">
+              <i class='fas fa-route'></i>
+            </div>
+            <div class="disabled btn btn-danger"><i class="fas fa-trash-alt"></i></div>
+            {%else%}
+            <button type="submit" class="btn btn-primary mx-3" style="max-height: 38px;">
+              <i class='fas fa-route'></i>
+            </button>
+            <a href="/delete/car/{{id_car}}" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
             {% endif %}
-            {% endfor %}
-          </select>
+          </div>
         </form>
       </div>
       {% if time %}
@@ -294,25 +333,24 @@
         </div>
       </div>
       {% endif %}
-      <a href="/delete/car/{{id_car}}" class="btn btn-danger" style="align-self: flex-start"><i class="fas fa-trash-alt"></i></a>
     </div>
-    {% if shortestPaths %}
+    <!-- {% if shortestPaths %}
     <div class="client-info p-4">
       <form action="/" method="POST" style="align-self: flex-start">
-        <h3>Melhores caminhos:</h3>
+        <h3 class="mb-3">Melhores caminhos:</h3>
         {% for sp in shortestPaths %}
         <div class="form-check" style="align-self: flex-start">
-          <div class="row">
-            <input class="form-check-input" type="radio" name="selectedPath" id="{{loop.index}}" value={{sp.cost}}>
-            <label class="form-check-label" for={{sp.cost}}>Duração {{(sp.cost//60)|int}} min {{(sp.cost%60)|int}} s</label>
-            <button action="/" type="submit" name="view-path" class="btn btn-primary btn-sm ml-2" value="{{id_cliente}} - {{sp.path}}">Visualizar caminho</button>
+          <div class="row mb-2" style="justify-content: space-between; ">
+            <input class="form-check-input mb-2" style="align-self: center;" type="radio" name="selectedPath" id="{{loop.index}}" value={{sp.cost}}>
+            <label class="form-check-label" style="align-self: center;" for={{sp.cost}}>Duração {{(sp.cost//60)|int}} min {{(sp.cost%60)|int}} s</label>
+            <button action="/" type="submit" name="view-path" class="btn btn-primary btn-sm ml-2" value="{{id_cliente}} - {{sp.path}}"><i class="fas fa-eye"></i></button>
           </div>
         </div>
         {% endfor %}
-        <input type="submit" value="Escolher caminho" name="select-path" class="btn btn-primary mt-2">
+        <input type="submit" value="Escolher caminho" name="select-path" class="btn btn-primary mt-4">
       </form>
     </div>
-    {% endif %}
+    {% endif %} -->
   </div>
 
 
