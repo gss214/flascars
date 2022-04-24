@@ -52,6 +52,7 @@ def hello_world():
             value = data[1].strip()
             shortestPaths = g.clientRoutes(value)
             car_client_path = g.getCarRoute(value, carValue)
+            g.resetColors()
             g.showGraphRoute(car_client_path[1], g.cars[carValue]["position"], g.clients[value]["approx_position_orig"])
         elif "select-path" in request.form:
             # global current_path
@@ -127,6 +128,7 @@ def upload_client_list():
             position = (float(values[1]), float(values[2]))
             destination = (float(values[3]), float(values[4]))
             g.addClient(position, destination)
+        g.resetColors()
         g.showGraph()
     return redirect('/')
 
@@ -143,6 +145,7 @@ def upload_car_list():
             position = (float(values[1]), float(values[2]))
             edge_id = values[3].decode('utf-8')
             g.addCar(position, edge_id)
+        g.resetColors()
         g.showGraph()
     return redirect('/')
 
@@ -160,17 +163,20 @@ def upload_speed_list():
             edge_id = values[0].decode('utf-8')
             speed = float(values[1])
             g.changeSpeed(edge_id,speed)
+        g.resetColors()
         g.showGraph()
     return redirect('/')
 
 @app.route("/delete/client/<id>", methods=['GET', 'POST'])
 def delete_client(id):
     g.removeClient(id)
+    g.resetColors()
     g.showGraph()
     return redirect('/')
 @app.route("/delete/car/<id>", methods=['GET', 'POST'])
 def delete_car(id):
     g.removeCar(id)
+    g.resetColors()
     g.showGraph()
     return redirect('/')
 
@@ -178,6 +184,7 @@ def delete_car(id):
 def deletecar():
     id = request.form.get('idCar')
     g.removeCar(id)
+    g.resetColors()
     g.showGraph()
     return redirect('/')
 
