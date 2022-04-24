@@ -1,5 +1,4 @@
 from operator import itemgetter
-# from xmlrpc.client import Boolean
 import networkx as nx
 from pyvis import network as net
 import time
@@ -980,7 +979,11 @@ class Graph:
             # 2) Nao Negativo -> O carro antes do cliente (A distancia ate o cliente)
             betweenDistance = self.cars[key]['dist_offset'] - self.clients[client_id]['dist_offset_next']
 
-            if self.cars[key]['approx_node'] == self.clients[client_id]['approx_node_next'] and betweenDistance >= 0:
+            carNode1, carNode2 = self.edges[self.cars[key]['edge_id']]
+            prevNodeCli = self.clients[client_id]['approx_node_prev']
+            nextNodeCli = self.clients[client_id]['approx_node_next']
+
+            if carNode1 == prevNodeCli and carNode2 == nextNodeCli and betweenDistance >= 0:
                 # distancia do carro ate o cliente
                 adjusted_distances[key] = betweenDistance
 
@@ -1015,7 +1018,9 @@ class Graph:
 
         betweenTime = self.clients[client]['time_offset_dest'] - self.clients[client]['time_offset_prev']
 
-        if dest == self.clients[client]['approx_node_prev'] and betweenTime >= 0:
+        _, destNextNode = self.edges[self.clients[client]['edge_id']]
+
+        if dest == self.clients[client]['approx_node_prev'] and orig == destNextNode and betweenTime >= 0:
             paths = [{'path': [], 'cost': betweenTime}]
         else:
             paths = self.yenkShortestPaths(orig, dest)
@@ -1040,9 +1045,11 @@ class Graph:
         orig = self.cars[car_id]['approx_node']
         dest = self.clients[client_id]['approx_node_prev']
         
+        edgeNode1, edgeNode2 = self.edges[self.cars[car_id]['edge_id']]
+        
         betweenTime = self.cars[car_id]['time_offset'] - self.clients[client_id]['time_offset_next']
 
-        if orig == self.clients[client_id]['approx_node_next'] and betweenTime >=0:
+        if edgeNode2 == self.clients[client_id]['approx_node_next'] and edgeNode1 == dest and betweenTime >=0:
             cost = betweenTime
             path = []
         else:
@@ -1176,8 +1183,21 @@ class Graph:
 
 if __name__ == "__main__":
     # fd = open("app/src/graphs/input5.txt", "r")
+    # fd = open("paa_arquivo.txt", "r")
     fd = open("input5.txt", "r")
     g = Graph(fd)
+
+    # clientId = g.addClient((-2, 0), (5, 6))
+    # clientId2 = g.addClient((2, 4), (7, 3.5))
+    # carId = g.addCar((1, 3), '23')
+    # carId2 = g.addCar((2.6, 4.2), '11')
+    # carId3 = g.addCar((6.05, 5.63), '22')
+
+    # print(g.carRoutes(clientId))
+    # print(g.getCarRoute(clientId, carId))
+    # print(g.getCarRoute(clientId, carId2))
+    # print(g.getCarRoute(clientId, carId3))
+
     clientId = g.addClient((0, 0), (6, 6))
     # clientId2 = g.addClient((2, 4), (2.8, 4))
     clientId3 = g.addClient((0, 0), (0, 0))
