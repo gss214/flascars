@@ -94,7 +94,7 @@ class Graph:
             self.Rgraph.add_node(node_orig_id, x = node_orig_x*self.zoomOut, y = node_orig_y*self.zoomOut, orig = (node_orig_x, node_orig_y), color=self.colorList[0], title=edge_orig_title)
             self.Rgraph.add_node(node_dest_id, x = node_dest_x*self.zoomOut, y = node_dest_y*self.zoomOut, orig = (node_dest_x, node_dest_y), color=self.colorList[0], title=edge_dest_title)
             
-            wheight_time = (int(distance)/int(speed))*3600
+            wheight_time = (distance/speed)*3600
 
             # Formata tempo em formato hh:mm
             time_string = time.strftime('%H:%M', time.gmtime(wheight_time))
@@ -384,7 +384,7 @@ class Graph:
 
         orig, dest = self.edges[edge_id]
         distance = self.graph.edges[orig, dest]["distance"]
-        wheight_time = (int(distance)/int(speed))*3600
+        wheight_time = (distance/speed)*3600
 
         print(orig, dest)
 
@@ -965,7 +965,7 @@ class Graph:
                 adjusted_times: tempo de viagem do carro até o cliente
         """
         # obtém a distância de um vértice a todos os outros no 
-        client = self.edges[client_id]['approx_node_prev']
+        client = self.clients[client_id]['approx_node_prev']
         distances = self.dijkstra(client, metric="distance", reverse=True)
         times = self.dijkstra(client, metric="time", reverse=True)
         
@@ -978,20 +978,24 @@ class Graph:
             # Dois casos possiveis:
             # 1) Negativo -> O carro depois do cliente (usa o Dijkstra)
             # 2) Nao Negativo -> O carro antes do cliente (A distancia ate o cliente)
-            betweenDistance = self.cars[key]['dist_offset'] - self.clients[key]['dist_offset_next']
+            betweenDistance = self.cars[key]['dist_offset'] - self.clients[client_id]['dist_offset_next']
 
             if self.cars[key]['approx_node'] == self.clients[client_id]['approx_node_next'] and betweenDistance >= 0:
                 # distancia do carro ate o cliente
                 adjusted_distances[key] = betweenDistance
 
                 # tempo que o carro leva para ir ate o cliente
-                adjusted_times[key] = self.cars[key]['time_offset'] - self.clients[key]['time_offset_next']
+                adjusted_times[key] = self.cars[key]['time_offset'] - self.clients[client_id]['time_offset_next']
             else:
                 # soma a distância do vértice para o qual o carro foi aproximado com o offset de ajuste do carro e do cliente
                 adjusted_distances[key] = distances[self.cars[key]['approx_node']] + self.cars[key]['dist_offset'] + self.clients[client_id]['dist_offset_prev']
                 
                 # soma o tempo até o vértice para o qual o carro foi aproximado com o offset de ajuste
                 adjusted_times[key] = times[self.cars[key]['approx_node']] + self.cars[key]['time_offset'] + self.clients[client_id]['time_offset_prev']
+
+        
+        adjusted_distances = {k: v for k, v in sorted(adjusted_distances.items(), key=lambda item: item[1])}
+        adjusted_times = {k: v for k, v in sorted(adjusted_times.items(), key=lambda item: item[1])}
 
         return adjusted_distances, adjusted_times
 
@@ -1096,7 +1100,7 @@ class Graph:
         Returns:
             Tuple[float, float, float, float]: Tempo médio de espera, tempo médio de viagem, distância média de viagem, tempo total de todos os clientes
         """
-        if self.numberOfTravels == 0: return (0, 0)
+        if self.numberOfTravels == 0: return (0, 0, 0, 0)
         return (
             self.waitTime / self.numberOfTravels,
             self.travelTime / self.numberOfTravels,

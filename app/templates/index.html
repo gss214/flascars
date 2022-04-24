@@ -201,7 +201,7 @@
         <div class="card" style="width: 20vw;">
           <div class="card-body" style="display: flex;flex-flow: column;align-items: center;">
             <h5 class="card-title text-center">Tempo médio de espera dos clientes</h5>
-            <h6 class="card-subtitle mb-2 text-muted" style="align-self: center;">5 minutos</h6>
+            <h6 class="card-subtitle mb-2 text-muted" style="align-self: center;">{{(metrics[0]//60)|int}} min {{(metrics[0]%60)|int}} s</h6>
           </div>
         </div>
       </div>
@@ -209,7 +209,7 @@
         <div class="card" style="width: 20vw;">
           <div class="card-body" style="display: flex;flex-flow: column;align-items: center;">
             <h5 class="card-title text-center">Tempo médio de viagem</h5>
-            <h6 class="card-subtitle mb-2 text-muted">30 minutos</h6>
+            <h6 class="card-subtitle mb-2 text-muted">{{(metrics[1]//60)|int}} min {{(metrics[1]%60)|int}} s</h6>
           </div>
         </div>
       </div>
@@ -217,7 +217,7 @@
         <div class="card" style="width: 20vw;">
           <div class="card-body" style="display: flex;flex-flow: column;align-items: center;">
             <h5 class="card-title text-center">Distância média percorrida</h5>
-            <h6 class="card-subtitle mb-2 text-muted">5 km</h6>
+            <h6 class="card-subtitle mb-2 text-muted">{{'%0.1f'|format(metrics[2])}} Km</h6>
           </div>
         </div>
       </div>
@@ -225,7 +225,7 @@
         <div class="card" style="width: 20vw;">
           <div class="card-body" style="display: flex;flex-flow: column;align-items: center;">
             <h5 class="card-title text-center">Distância total percorrida</h5>
-            <h6 class="card-subtitle mb-2 text-muted">5 km</h6>
+            <h6 class="card-subtitle mb-2 text-muted">{{'%0.1f'|format(metrics[3])}} Km</h6>
           </div>
         </div>
       </div>
@@ -295,19 +295,21 @@
           <div class="input-group mt-3 mb-3" style="align-items: center;">
             <select id="idCar" class="form-control form-control-lg primary round-btn" name="idCar"
               style="background-color: #377be8 !important;">
-              {% for car in cars %}
-              {% if car == id_car %}
-              <option selected="selected" value="{{car}}-{{id_cliente}}"><span><i class="fas fa-user mr-2"></i>
-                  <p>{{car}}</p>
-                </span></option>
-              {% else %}
-              <option value={{car}}><span><i class="fas fa-user mr-2"></i>
-                  <p>{{car}}</p>
-                </span></option>
+              {% if carDist != None %}
+                {% for car in carDist %}
+                {% if car == id_car %}
+                <option selected="selected" value="{{car}}-{{id_cliente}}"><span><i class="fas fa-user mr-2"></i>
+                    <p>{{car}} - {{'%0.1f'|format(carDist[car])}} Km</p>
+                  </span></option>
+                {% else %}
+                <option value={{car}}-{{id_cliente}}><span><i class="fas fa-user mr-2"></i>
+                    <p>{{car}} - {{'%0.1f'|format(carDist[car])}} Km</p>
+                  </span></option>
+                {% endif %}
+                {% endfor %}
               {% endif %}
-              {% endfor %}
             </select>
-            {% if cars == []%}
+            {% if carDist == None %}
             <div class="disabled btn btn-primary mx-3" style="max-height: 38px;">
               <i class='fas fa-route'></i>
             </div>
@@ -320,35 +322,71 @@
             {% endif %}
           </div>
         </form>
-        {% if time %}
-        <div onclick="selectRoute({{_tuple}})" class="my-2"
-          style="display: flex; flex-direction: collum; justify-content: center;">
-          <div class="line p-3 info-btn" style="border-radius: 5px; border: 1px solid #BEBEBE; align-items: center;">
-            <div class="info-label ml-2 px-3">
-              <p class="mr-5 ml- mb-0">Tempo de espera: {{(time[id_car]//60)|int}} min {{(time[id_car]%60)|int}} s</p>
-              <p class="mb-0 mr-4">Distância até o cliente: {{'%0.1f'|format(dist[id_car])}} km</p>
+      </div>
+      <div class="dropdown" style="align-self: flex-start">
+        <form action="/" method="POST" name="id">
+          <div class="input-group mt-3 mb-3" style="align-items: center;">
+            <select id="idCar" class="form-control form-control-lg primary round-btn" name="idCar"
+              style="background-color: #377be8 !important;">
+              {% if carTime != None %}
+                {% for car in carDist %}
+                {% if car == id_car %}
+                <option selected="selected" value="{{car}}-{{id_cliente}}"><span><i class="fas fa-user mr-2"></i>
+                    <p>{{car}} - {{(carTime[car]//60)|int}} min {{(carTime[car]%60)|int}} s</p>
+                  </span></option>
+                {% else %}
+                <option value={{car}}-{{id_cliente}}><span><i class="fas fa-user mr-2"></i>
+                    <p>{{car}} - {{(carTime[car]//60)|int}} min {{(carTime[car]%60)|int}} s</p>
+                  </span></option>
+                {% endif %}
+                {% endfor %}
+              {% endif %}
+            </select>
+            {% if carTime == None %}
+            <div class="disabled btn btn-primary mx-3" style="max-height: 38px;">
+              <i class='fas fa-route'></i>
             </div>
+            <div class="disabled btn btn-danger"><i class="fas fa-trash-alt"></i></div>
+            {%else%}
+            <button type="submit" class="btn btn-primary mx-3" style="max-height: 38px;">
+              <i class='fas fa-route'></i>
+            </button>
+            <a href="/delete/car/{{id_car}}" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
+            {% endif %}
           </div>
-        </div>
-        {% endif %}
+        </form>
       </div>
     </div>
     {% if shortestPaths %}
     <div class="client-info p-4">
       <form action="/" method="POST" style="align-self: flex-start">
-        <h3 class="mb-3">Melhores caminhos:</h3>
+        <h3 class="mb-3">Melhores caminhos: (Carro {{id_car}})</h3>
         {% for sp in shortestPaths %}
         {% if loop.index == path_index %}
-          <div>
-            <p>Duração {{(sp.cost//60)|int}} min {{(sp.cost%60)|int}} s</p>
+          <div style="display: flex;" class="mx-2">
+            <div>
+              {% if loop.index == 1 %}
+              <p class="mb-1">Caminho recomendado</p>
+              {% else %}
+              <p class="mb-0">Caminho alternativo</p>
+              {% endif %}
+              <p class="mb-0">Duração {{(sp.cost//60)|int}} min {{(sp.cost%60)|int}} s</p>
+            </div>
             <button action="/" type="submit" name="select-path" class="btn btn-primary btn-sm ml-2"
-                value="{{id_car}} - {{id_cliente}} - {{loop.index}}"><i>Escolher caminho</i></button>
+                value="{{id_car}} - {{id_cliente}} - {{loop.index}}" style="align-self: center;max-height: 33px;"><i>Escolher caminho</i></button>
           </div>
           {% else %}
-            <div>
-              <p>Duração {{(sp.cost//60)|int}} min {{(sp.cost%60)|int}} s</p>
+          <div style="display: flex; justify-content: space-between;">
+            <div class="my-1">
+              {% if loop.index == 1 %}
+              <p class="mb-1">Caminho recomendado</p>
+              {% else %}
+              <p class="mb-0">Caminho alternativo</p>
+              {% endif %}
+              <p class="mb-0">Duração {{(sp.cost//60)|int}} min {{(sp.cost%60)|int}} s</p>
+            </div>
               <button action="/" type="submit" name="view-path" class="btn btn-primary btn-sm ml-2"
-                  value="{{id_car}} - {{id_cliente}} - {{loop.index}}"><i class="fas fa-eye"></i></button>
+                  value="{{id_car}} - {{id_cliente}} - {{loop.index}}" style="align-self: center;max-height: 33px;"><i class="fas fa-eye"></i></button>
             </div>
           {% endif %}
         {% endfor %}
