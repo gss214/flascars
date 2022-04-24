@@ -237,13 +237,13 @@ class Graph:
         self.graph.remove_node(carId)
         del self.cars[carId]
 
-    def addClient(self, position : Tuple[float, float], destination : Tuple[float, float]) -> str:
+    def addClient(self, position : Tuple[float, float], destination : Tuple[float, float], clientId : str = None) -> str:
         """
         Input: position and destination - tuples of x and y coordinates
         Output: Created client's ID
         Behavior: Creates new client as an unconnected node in the graph
         """
-        clientId = str(self.__genNewId())
+        if clientId == None: clientId = str(self.__genNewId())
         edge_title = "Cliente<br>"
         edge_title += f"ID = {clientId}<br>"
         edge_title += f"Origem = {position}<br>"
@@ -374,6 +374,14 @@ class Graph:
         new_title += f"Time = {time.strftime('%H:%M', time.gmtime(wheight_time))}"
         self.graph.edges[orig, dest]["title"] = new_title
 
+    def __resetClients(self):
+        clientIdList = list(self.clients.keys())
+        for clientId in clientIdList:
+            pos = self.clients[clientId]['position']
+            dest = self.clients[clientId]['destination']
+            self.removeClient(clientId)
+            self.addClient(pos, dest, clientId)
+
     def changeSpeed(self, edge_id : str, speed : float) -> bool:
         """
         Input: edge id, new speed
@@ -393,6 +401,8 @@ class Graph:
         self.Rgraph.edges[dest, orig]["time"] = wheight_time
 
         self.__updateTitle(edge_id)
+        self.__resetClients()
+
         return True
 
     def changeEdgeColor(self, edge_id : str, color : str = "#303030"):
