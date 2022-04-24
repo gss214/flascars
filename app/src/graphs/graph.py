@@ -1016,17 +1016,14 @@ class Graph:
         betweenTime = self.clients[client]['time_offset_dest'] - self.clients[client]['time_offset_prev']
 
         if dest == self.clients[client]['approx_node_prev'] and betweenTime >= 0:
-            print("if1")
             paths = [{'path': [], 'cost': betweenTime}]
         else:
-            print("if2")
             paths = self.yenkShortestPaths(orig, dest)
 
             # adicona os offsets de tempo
             for path in paths:
                 path['cost'] += self.clients[client]['time_offset_dest'] + self.clients[client]['time_offset_next']
 
-        print(paths)
         return paths
 
     def getCarRoute(self, client_id : str, car_id : str) -> Tuple[float, List[str]]:
