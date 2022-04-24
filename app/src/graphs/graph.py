@@ -444,6 +444,7 @@ class Graph:
             self.graph.edges[orig, dest]["width"] = 1
 
     def __formatPosition(self, position : Tuple[float, float]) -> Tuple[str, str]:
+        # return position
         return ('{:.2f}'.format(position[0]), '{:.2f}'.format(position[1]))
 
     def showGraphRoute(self, path : List, approx_orig : Tuple[float, float], approx_dest : Tuple[float, float], approx_interm : Tuple[float, float] = None):
@@ -451,6 +452,8 @@ class Graph:
         Args:
             reverse (bool, optional): True se o objetivo é mostrar o grafo reverso. Padrão é Falso.
         """
+
+        print(path)
 
         color = self.colorList[5]
         graph_plot = net.Network(height='100%', width='100%',notebook=False, directed=True, font_color="#10000000")
@@ -574,7 +577,7 @@ class Graph:
                     path[-1],
                     str(new_id2), 
                     # title="qualquer coisa aqui",
-                    color=color,
+                    color=self.colorList[1],
                     width=3
                 )
 
@@ -704,7 +707,7 @@ class Graph:
         relative = (distance_node/distance_total)
 
         # retorna o próprio vértice com offsets 0 caso o carro esteja em cima de um vértice
-        if self.__distance(nodeObj2, position) == 0:
+        if self.__distance(nodeObj2, dictionary["position"]) == 0:
             return (dest_edge[1], 0, dictionary["position"], 0, aux)
 
         return (dest_edge[0], self.graph.edges[dest_edge[0], dest_edge[1]]["time"] * relative, dictionary["position"], self.graph.edges[dest_edge[0], dest_edge[1]]["distance"] * relative, aux)
