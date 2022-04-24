@@ -268,7 +268,6 @@
             <button type="submit" class="btn btn-primary mx-3" style="max-height: 38px;">
               <i class="fas fa-map-marked-alt"></i>
             </button>
-            <a href="/delete/client/{{id_cliente}}" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
             {% endif %}
           </div>
         </form>
@@ -319,7 +318,6 @@
             <button type="submit" class="btn btn-primary mx-3" style="max-height: 38px;">
               <i class='fas fa-route'></i>
             </button>
-            <a href="/delete/car/{{id_car}}" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
             {% endif %}
           </div>
         </form>
@@ -352,7 +350,6 @@
             <button type="submit" class="btn btn-primary mx-3" style="max-height: 38px;">
               <i class='fas fa-route'></i>
             </button>
-            <a href="/delete/car/{{id_car}}" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a>
             {% endif %}
           </div>
         </form>
@@ -361,7 +358,7 @@
     {% if shortestPaths %}
     <div class="client-info p-4">
       <form action="/" method="POST" style="align-self: flex-start">
-        <h3 class="mb-3">Melhores caminhos para o Carro {{id_car}}</h3>
+        <h5 class="mb-3">Melhores caminhos para o Carro {{id_car}}  <a href="/delete/car/{{id_car}}" class="btn btn-danger"><i class="fas fa-trash-alt"></i></a></h5>
         {% for sp in shortestPaths %}
         {% if loop.index == path_index %}
           <div style="display: flex;" class="mx-2">
