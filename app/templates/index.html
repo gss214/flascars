@@ -376,12 +376,12 @@
               {% endfor %}
               {% endif %}
             </select>
-            {% if cars == None %}
-            <div class="disabled btn btn-danger mx-3"><i class="fas fa-trash-alt"></i></div>
-            {%else%}
+            {% if cars %}
             <button type="submit" class="btn btn-danger mx-3" style="max-height: 38px;">
-              <i class="fas fa-trash-alt"></i>
-            </button>
+            <i class="fas fa-trash-alt"></i>
+          </button>
+          {%else%}
+          <div class="disabled btn btn-danger mx-3"><i class="fas fa-trash-alt"></i></div>
             {% endif %}
           </div>
         </form>
