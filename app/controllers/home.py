@@ -174,6 +174,13 @@ def delete_car(id):
     g.showGraph()
     return redirect('/')
 
+@app.route("/deletecar/", methods=['GET', 'POST'])
+def deletecar():
+    id = request.form.get('idCar')
+    g.removeCar(id)
+    g.showGraph()
+    return redirect('/')
+
 @app.route("/selectRoute/<id_client>/<id_car>", methods=['GET', 'POST'])
 def select_route(id_client,id_car):
     _ ,rotas = g.getCarRoute(id_client,id_car)
