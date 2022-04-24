@@ -293,38 +293,6 @@
       </div>
       <h5 class="text-left">Selecione um carro para conferir os caminhos</h5>
       <div class="dropdown" style="align-self: flex-start">
-        <p>Carros por distância até o cliente:</p>
-        <form action="/" method="POST" name="id">
-          <div class="input-group mt-3 mb-3" style="align-items: center;">
-            <select id="idCar" class="form-control form-control-lg primary round-btn" name="idCar"
-              style="background-color: #377be8 !important;">
-              {% if carDist != None %}
-              {% for car in carDist %}
-              {% if car == id_car %}
-              <option selected="selected" value="{{car}}-{{id_cliente}}"><span><i class="fas fa-user mr-2"></i>
-                  <p>{{car}} - {{'%0.1f'|format(carDist[car])}} Km</p>
-                </span></option>
-              {% else %}
-              <option value={{car}}-{{id_cliente}}><span><i class="fas fa-user mr-2"></i>
-                  <p>{{car}} - {{'%0.1f'|format(carDist[car])}} Km</p>
-                </span></option>
-              {% endif %}
-              {% endfor %}
-              {% endif %}
-            </select>
-            {% if carDist == None %}
-            <div class="disabled btn btn-primary mx-3" style="max-height: 38px;">
-              <i class='fas fa-route'></i>
-            </div>
-            {%else%}
-            <button type="submit" class="btn btn-primary mx-3" style="max-height: 38px;">
-              <i class='fas fa-route'></i>
-            </button>
-            {% endif %}
-          </div>
-        </form>
-      </div>
-      <div class="dropdown" style="align-self: flex-start">
         <p>Carros por tempo até o cliente:</p>
         <form action="/" method="POST" name="id">
           <div class="input-group mt-3 mb-3" style="align-items: center;">
@@ -345,6 +313,38 @@
               {% endif %}
             </select>
             {% if carTime == None %}
+            <div class="disabled btn btn-primary mx-3" style="max-height: 38px;">
+              <i class='fas fa-route'></i>
+            </div>
+            {%else%}
+            <button type="submit" class="btn btn-primary mx-3" style="max-height: 38px;">
+              <i class='fas fa-route'></i>
+            </button>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+      <div class="dropdown" style="align-self: flex-start">
+        <p>Carros por distância até o cliente:</p>
+        <form action="/" method="POST" name="id">
+          <div class="input-group mt-3 mb-3" style="align-items: center;">
+            <select id="idCar" class="form-control form-control-lg primary round-btn" name="idCar"
+              style="background-color: #377be8 !important;">
+              {% if carDist != None %}
+              {% for car in carDist %}
+              {% if car == id_car %}
+              <option selected="selected" value="{{car}}-{{id_cliente}}"><span><i class="fas fa-user mr-2"></i>
+                  <p>{{car}} - {{'%0.1f'|format(carDist[car])}} Km</p>
+                </span></option>
+              {% else %}
+              <option value={{car}}-{{id_cliente}}><span><i class="fas fa-user mr-2"></i>
+                  <p>{{car}} - {{'%0.1f'|format(carDist[car])}} Km</p>
+                </span></option>
+              {% endif %}
+              {% endfor %}
+              {% endif %}
+            </select>
+            {% if carDist == None %}
             <div class="disabled btn btn-primary mx-3" style="max-height: 38px;">
               <i class='fas fa-route'></i>
             </div>
@@ -390,8 +390,7 @@
     {% if shortestPaths %}
     <div class="client-info p-4">
       <form action="/" method="POST" style="align-self: flex-start">
-        <h5 class="mb-3">Melhores caminhos para o Carro {{id_car}} <a href="/delete/car/{{id_car}}"
-            class="btn btn-danger"><i class="fas fa-trash-alt"></i></a></h5>
+        <h5 class="mb-3">Melhores caminhos para o Carro {{id_car}}</h5>
         {% for sp in shortestPaths %}
         {% if loop.index == path_index %}
         <div style="display: flex;" class="mx-2">
