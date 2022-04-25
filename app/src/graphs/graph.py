@@ -577,7 +577,7 @@ class Graph:
                     path[-1],
                     str(new_id2), 
                     # title="qualquer coisa aqui",
-                    color=self.colorList[1],
+                    color=color,
                     width=3
                 )
 
@@ -1122,7 +1122,7 @@ class Graph:
             self.waitTime / self.numberOfTravels,
             self.travelTime / self.numberOfTravels,
             self.totalDistance / self.numberOfTravels,
-            self.totalTime
+            self.totalDistance
         )
 
     def valid_paths(self, paths : List[Dict[float, List[str]]], orig : str = '', dest : str = '') -> bool:
