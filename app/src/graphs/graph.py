@@ -1080,7 +1080,9 @@ class Graph:
         
         car_client_cost, car_client_path = self.getCarRoute(client_id, car_id)
 
-        if car_client_path != [] and car_client_path[-1] == route['path'][0]:
+        if route['path'] == []:
+            total_path = car_client_path + route['path']
+        elif car_client_path != [] and car_client_path[-1] == route['path'][0]:
             total_path = car_client_path + route['path'][1:]
         else:
             total_path = car_client_path + route['path']
