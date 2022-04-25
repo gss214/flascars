@@ -577,7 +577,7 @@ class Graph:
                     path[-1],
                     str(new_id2), 
                     # title="qualquer coisa aqui",
-                    color=self.colorList[1],
+                    color=color,
                     width=3
                 )
 
