@@ -1,0 +1,463 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<body>
+  <div class="header">
+
+    <nav class="navbar navbar-dark bg-dark navbar-expand-lg text-white px-4">
+      <a class="navbar-brand" href="#"><img class="mr-2" src="{{ url_for('static', filename='car.png') }}"
+          style="max-width: 1.8vw;"><span>Flascars</span></a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-placement="right"
+        title="Tooltip na direita" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+        aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+
+          <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#clientModal"
+            data-placement="right" title="Tooltip na direita">
+            <i class="fas fa-user"></i>
+          </button>
+
+          <div class="modal fade" id="clientModal" tabindex="-1" role="dialog" aria-labelledby="clientModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="clientModalLabel" style="color: black">Adicionar Cliente</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body pb-1">
+                  <form action="/" method="POST">
+                    <p style="color: black">Adicione um cliente manualmente</p>
+                    <div class="mb-2">
+                      <label for="Localization" class="form-label">Localização</label>
+                      <div class="row">
+                        <div class="col">
+                          <input class="form-control" name="input-loc-x" placeholder="Localização x"
+                            aria-label="Localização x" type="number" step="0.01">
+                        </div>
+                        <div class="col">
+                          <input class="form-control" name="input-loc-y" placeholder="Localização y"
+                            aria-label="Localização y" type="number" step="0.01">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mb-2">
+                      <label for="Destination" class="form-label">Destino</label>
+                      <div class="row">
+                        <div class="col">
+                          <input type="number" class="form-control" name="input-dest-x" placeholder="Destino x"
+                            aria-label="Destino x" type="number" step="0.01">
+                        </div>
+                        <div class="col">
+                          <input type="number" class="form-control" name="input-dest-y" placeholder="Destino y"
+                            aria-label="Destino y" type="number" step="0.01">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                        id="btnSaveClientModal">Cancelar</button>
+                      <button type="submit" id="client-form-submit" name="client-form-submit" value="client-form-submit"
+                        class="btn btn-primary">Adicionar Cliente</button>
+                    </div>
+                  </form>
+                  <form action="/upload_client" style="display: flex; flex-flow: column;" method="post"
+                    enctype=multipart/form-data>
+                    <div class="mt-5">
+                      <label for="formFileMultiple" class="form-label" style="color: black">Ou faça um upload de uma
+                        lista de clientes !</label>
+                      <input class="form-control" type="file" id="formFileMultiple" name="file-client">
+                    </div>
+                    <input class=" btn btn-primary mt-3 mb-3"
+                      style="justify-content: flex-end; max-width: 40%; align-self: end; margin-right: 16px;"
+                      type="submit" />
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          </li>
+          <li class="nav-item">
+            <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#carModal"><i
+                class="fas fa-car"></i></button>
+
+            <div class="modal fade" id="carModal" tabindex="-1" role="dialog" aria-labelledby="carModalLabel"
+              aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="carModalLabel" style="color: black">Adicionar Carro</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <form action="/" method="POST">
+                      <div class="input-group">
+                        <div class="row mb-3">
+                          <div class="col">
+                            <input class="form-control" name="car-x" placeholder="Localização x"
+                              aria-label="Localização x" type="number" step="0.01">
+                          </div>
+                          <div class="col">
+                            <input type="number" class="form-control" name="car-y" placeholder="Localização y"
+                              aria-label="Localização y" type="number" step="0.01">
+                          </div>
+                        </div>
+                        <select class="custom-select" name="edge-id">
+                          {% for edge in streets %}
+                          <option value={{edge}}>Rua {{edge}}</option>
+                          {% endfor %}
+                        </select>
+                        <div class="input-group-append mr-3">
+                          <button type="submit" id="car-form-submit" name="car-form-submit"
+                            class="btn btn-primary">Adicionar Carro</button>
+                        </div>
+                      </div>
+                    </form>
+                    <form action="/upload_car" style="display: flex; flex-flow: column;" method="post"
+                      enctype=multipart/form-data>
+                      <div class="mt-5">
+                        <label for="formFileMultiple" class="form-label" style="color: black">Ou faça um upload de uma
+                          lista de carros!</label>
+                        <input class="form-control" type="file" id="formFileMultiple" name="file-car">
+                      </div>
+                      <input class=" btn btn-primary mt-3 "
+                        style="justify-content: flex-end; max-width: 40%; align-self: end; margin-right: 16px;"
+                        type="submit" />
+                    </form>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </li>
+
+          <li class="nav-item">
+            <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#velocityModal"><i
+                class="fas fa-tachometer-alt"></i></button>
+
+            <div class="modal fade" id="velocityModal" tabindex="-1" role="dialog" aria-labelledby="velocityModalLabel"
+              aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="velocityModalLabel" style="color: black">Alterar velocidade da via</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <form action="/" method="POST">
+                      <select class="form-control form-control-lg" name="street-id-speed">
+                        {% for st in streets %}
+                        <option value={{st}}>Rua {{st}}</option>
+                        {% endfor %}
+                      </select>
+                      <input name="speed" class="form-control" placeholder="Insira a nova velcidade da rua"
+                        aria-label="speed_entry" type="number" step="1" min="1">
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" id="speed-form-submit" name="speed-form-submit"
+                          class="btn btn-primary">Alterar velcidade da via</button>
+                      </div>
+                    </form>
+                    <form action="/upload_speed" style="display: flex; flex-flow: column;" method="post"
+                      enctype=multipart/form-data>
+                      <div class="mt-5">
+                        <label for="formFileMultiple" class="form-label" style="color: black">Ou faça um upload de um
+                          arquivo!</label>
+                        <input class="form-control" type="file" id="formFileMultiple" name="file-speed">
+                      </div>
+                      <input class=" btn btn-primary mt-3 mb-3"
+                        style="justify-content: flex-end; max-width: 40%; align-self: end; margin-right: 16px;"
+                        type="submit" />
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+      </div>
+
+
+    </nav>
+  </div>
+  <div class="banner">
+  </div>
+
+  <div class="container-fluid mt-3">
+    <div class="row justify-content-md-center">
+      <div class="col-3" style="display: flex; justify-content: center;">
+        <div class="card" style="width: 20vw;">
+          <div class="card-body" style="display: flex;flex-flow: column;align-items: center;">
+            <h5 class="card-title text-center">Tempo médio de espera dos clientes</h5>
+            <h6 class="card-subtitle mb-2 text-muted" style="align-self: center;">{{(metrics[0]//60)|int}} min
+              {{(metrics[0]%60)|int}} s</h6>
+          </div>
+        </div>
+      </div>
+      <div class="col-3" style="display: flex; justify-content: center;">
+        <div class="card" style="width: 20vw;">
+          <div class="card-body" style="display: flex;flex-flow: column;align-items: center;">
+            <h5 class="card-title text-center">Tempo médio de viagem</h5>
+            <h6 class="card-subtitle mb-2 text-muted">{{(metrics[1]//60)|int}} min {{(metrics[1]%60)|int}} s</h6>
+          </div>
+        </div>
+      </div>
+      <div class="col-3" style="display: flex; justify-content: center;">
+        <div class="card" style="width: 20vw;">
+          <div class="card-body" style="display: flex;flex-flow: column;align-items: center;">
+            <h5 class="card-title text-center">Distância média percorrida</h5>
+            <h6 class="card-subtitle mb-2 text-muted">{{'%0.1f'|format(metrics[2])}} Km</h6>
+          </div>
+        </div>
+      </div>
+      <div class="col-3" style="display: flex; justify-content: center;">
+        <div class="card" style="width: 20vw;">
+          <div class="card-body" style="display: flex;flex-flow: column;align-items: center;">
+            <h5 class="card-title text-center">Distância total percorrida</h5>
+            <h6 class="card-subtitle mb-2 text-muted">{{'%0.1f'|format(metrics[3])}} Km</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="graph-container mt-5">
+    <div class="graph">
+      <iframe src="{{ url_for('static', filename='graph.html') }}"
+        style="width: 100%; height: 100%; border-radius: 10px 10px 0 0; border: 1px;" scrolling="no"
+        title="graph"></iframe>
+    </div>
+  </div>
+  <div class="client-info-container mb-5 mt-5">
+    <div class="client-info p-4 col-6">
+      <h5 class="text-left">Selecione um cliente para conferir os carros próximos:</h5>
+      <div class="dropdown" style="align-self: flex-start">
+        <form action="/" method="POST" name="id">
+          <div class="input-group mt-3 mb-3" style="align-items: center;">
+            <select id="client-id" class="form-control form-control-lg primary round-btn" name="id"
+              style="background-color: #f78f2dfb !important;">
+              {% for client in clients %}
+              {% if client == id_cliente %}
+              <option selected="selected" value={{client}}><span><i class="fas fa-user mr-2"></i>
+                  <p>{{client}}</p>
+                </span></option>
+              {% else %}
+              <option value={{client}}><span><i class="fas fa-user mr-2"></i>
+                  <p>{{client}}</p>
+                </span></option>
+              {% endif %}
+              {% endfor %}
+            </select>
+
+            {% if clients == []%}
+            <div class="disabled btn btn-primary mx-3" style="max-height: 38px;">
+              <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <div class="disabled btn btn-danger"><i class="fas fa-trash-alt"></i></div>
+            {%else%}
+            <button type="submit" class="btn btn-primary mx-3" style="max-height: 38px;">
+              <i class="fas fa-map-marked-alt"></i>
+            </button>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+      <div class="cliente-choices">
+        {% if time %}
+        <div class="my-2" style="display: flex; flex-direction: collum; justify-content: center;">
+          <div class="line p-3 info-btn" style="border-radius: 5px; border: 1px solid #BEBEBE; align-items: center;">
+            <div class="info-label ml-2 px-3">
+              {% for client in clients %}
+              <p>{{client}}</p>
+              {% if client == id_cliente %}
+              <p class="mr-5 ml- mb-0">Localização atual: {{client[id_cliente].position}}</p>
+              <p class="mb-0 mr-4">Destino: {{client[id_cliente].destination}}</p>
+              {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      <h5 class="text-left">Selecione um carro para conferir os caminhos</h5>
+      <div class="dropdown" style="align-self: flex-start">
+        <p>Carros por tempo até o cliente:</p>
+        <form action="/" method="POST" name="id">
+          <div class="input-group mt-3 mb-3" style="align-items: center;">
+            <select id="idCar" class="form-control form-control-lg primary round-btn" name="idCar"
+              style="background-color: #377be8 !important;">
+              {% if carTime != None %}
+              {% for car in carTime %}
+              {% if car == id_car %}
+              <option selected="selected" value="{{car}}-{{id_cliente}}"><span><i class="fas fa-user mr-2"></i>
+                  <p>{{car}} - {{(carTime[car]//60)|int}} min {{(carTime[car]%60)|int}} s</p>
+                </span></option>
+              {% else %}
+              <option value={{car}}-{{id_cliente}}><span><i class="fas fa-user mr-2"></i>
+                  <p>{{car}} - {{(carTime[car]//60)|int}} min {{(carTime[car]%60)|int}} s</p>
+                </span></option>
+              {% endif %}
+              {% endfor %}
+              {% endif %}
+            </select>
+            {% if carTime == None %}
+            <div class="disabled btn btn-primary mx-3" style="max-height: 38px;">
+              <i class='fas fa-route'></i>
+            </div>
+            {%else%}
+            <button type="submit" class="btn btn-primary mx-3" style="max-height: 38px;">
+              <i class='fas fa-route'></i>
+            </button>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+      <div class="dropdown" style="align-self: flex-start">
+        <p>Carros por distância até o cliente:</p>
+        <form action="/" method="POST" name="id">
+          <div class="input-group mt-3 mb-3" style="align-items: center;">
+            <select id="idCar" class="form-control form-control-lg primary round-btn" name="idCar"
+              style="background-color: #377be8 !important;">
+              {% if carDist != None %}
+              {% for car in carDist %}
+              {% if car == id_car %}
+              <option selected="selected" value="{{car}}-{{id_cliente}}"><span><i class="fas fa-user mr-2"></i>
+                  <p>{{car}} - {{'%0.1f'|format(carDist[car])}} Km</p>
+                </span></option>
+              {% else %}
+              <option value={{car}}-{{id_cliente}}><span><i class="fas fa-user mr-2"></i>
+                  <p>{{car}} - {{'%0.1f'|format(carDist[car])}} Km</p>
+                </span></option>
+              {% endif %}
+              {% endfor %}
+              {% endif %}
+            </select>
+            {% if carDist == None %}
+            <div class="disabled btn btn-primary mx-3" style="max-height: 38px;">
+              <i class='fas fa-route'></i>
+            </div>
+            {%else%}
+            <button type="submit" class="btn btn-primary mx-3" style="max-height: 38px;">
+              <i class='fas fa-route'></i>
+            </button>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+      <div class="dropdown" style="align-self: flex-start">
+        <p>Selecione um carro para excluir:</p>
+        <form action="/deletecar/" method="POST" name="id">
+          <div class="input-group mt-3 mb-3" style="align-items: center;">
+            <select id="idCar" class="form-control form-control-lg primary round-btn" name="idCar"
+              style="background-color: #377be8 !important;">
+              {% if cars != None %}
+              {% for car in cars %}
+              {% if car == id_car %}
+              <option selected="selected" value="{{car}}"><span><i class="fas fa-user mr-2"></i>
+                  <p>Carro {{car}}</p>
+                </span></option>
+              {% else %}
+              <option value={{car}}><span><i class="fas fa-user mr-2"></i>
+                  <p>Carro {{car}}</p>
+                </span></option>
+              {% endif %}
+              {% endfor %}
+              {% endif %}
+            </select>
+            {% if cars %}
+            <button type="submit" class="btn btn-danger mx-3" style="max-height: 38px;">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+          {%else%}
+          <div class="disabled btn btn-danger mx-3"><i class="fas fa-trash-alt"></i></div>
+            {% endif %}
+          </div>
+        </form>
+      </div>
+    </div>
+    {% if shortestPaths %}
+    <div class="client-info p-4">
+      <form action="/" method="POST" style="align-self: flex-start">
+        <h5 class="mb-3">Melhores caminhos para o Carro {{id_car}}</h5>
+        {% for sp in shortestPaths %}
+        {% if loop.index == path_index %}
+        <div style="display: flex;" class="mx-2">
+          <div>
+            {% if loop.index == 1 %}
+            <p class="mb-1 font-weight-bold">Caminho recomendado</p>
+            {% else %}
+            <p class="mb-0">Caminho alternativo</p>
+            {% endif %}
+            <p class="mb-0">Duração {{(sp.cost//60)|int}} min {{(sp.cost%60)|int}} s</p>
+          </div>
+          <button action="/" type="submit" name="select-path" class="btn btn-primary btn-sm ml-2"
+            value="{{id_car}} - {{id_cliente}} - {{loop.index}}"
+            style="align-self: center;max-height: 33px;"><i>Escolher caminho</i></button>
+        </div>
+        {% else %}
+        <div style="display: flex; justify-content: space-between;">
+          <div class="my-1">
+            {% if loop.index == 1 %}
+            <p class="mb-1 font-weight-bold">Caminho recomendado</p>
+            {% else %}
+            <p class="mb-0">Caminho alternativo</p>
+            {% endif %}
+            <p class="mb-0">Duração {{(sp.cost//60)|int}} min {{(sp.cost%60)|int}} s</p>
+          </div>
+          <button action="/" type="submit" name="view-path" class="btn btn-primary btn-sm ml-2"
+            value="{{id_car}} - {{id_cliente}} - {{loop.index}}" style="align-self: center;max-height: 33px;"><i
+              class="fas fa-eye"></i></button>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </form>
+    </div>
+    {% endif %}
+  </div>
+  </div>
+
+
+
+  <div class="footer px-3">
+    <p class="mt-2 mr-3 mb-1">UNB - 04/2022</p>
+    <p class="mt-2 ml-3 mb-1">Site desenvolvido para a disciplina de PAA</p>
+  </div>
+</body>
+
+<script>
+  var click = false
+  function send() {
+    if (click) {
+      document.forms["id"].submit(id)
+    }
+    click = true
+  }
+  var clickCar = false
+  function sendCar() {
+    if (clickCar) {
+      document.forms["idCar"].submit(idCar)
+    }
+    clickCar = true
+  }
+  function selectRoute(_tuple) {
+    const id_cliente = parseInt(_tuple[0])
+    const id_car = parseInt(_tuple[1])
+    console.log(id_car, id_cliente)
+    window.location.href = '/selectRoute/' + id_cliente + '/' + id_car
+  }
+</script>
+
+</html>
+{% endblock %}
